@@ -4,6 +4,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.window.Window
@@ -12,12 +13,12 @@ import androidx.compose.ui.window.application
 @Composable
 @Preview
 fun App() {
-    val columns = remember { mutableStateListOf(List<Pin?>(5) {null}) }
+    val columns = remember { mutableStateListOf(List<Pin>(5) {Pin(Color.Black)}) }
 
     Column {
         Board.columns(columns)
 
-        Board.placeBalePins()
+        Board.placeablePins()
 
         var value by remember { mutableStateOf(columns.size.toString()) }
 
@@ -38,7 +39,7 @@ fun App() {
 
                             if (newSize > currentSize) {
                                 repeat(newSize - currentSize) {
-                                    columns.add(List<Pin?>(5) { null })
+                                    columns.add(List<Pin>(5) { Pin(Color.Black) })
                                 }
                             } else if (newSize in 0..<currentSize) {
                                 repeat(currentSize - newSize) {
