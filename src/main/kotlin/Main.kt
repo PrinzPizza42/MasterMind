@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.window.Window
@@ -19,6 +20,7 @@ fun App() {
     val columnCount = remember { mutableStateOf(8) }
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
+    val solution = remember { mutableListOf<Pin>() }
 
     // initial filling of list
     LaunchedEffect(Unit) {
@@ -54,33 +56,47 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase)
-            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase)
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount)
+            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize)
             GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase)
             GamePhases.FINISHED -> finished(gamePhase)
         }
-
-        settings(columnCount, columnSize)
     }
 }
 
 @Composable
-fun beforeGame(gamePhase: MutableState<GamePhases>) {
+fun beforeGame(gamePhase: MutableState<GamePhases>, columnSize: MutableState<Int>, columnCount: MutableState<Int>) {
+    Text("Voreinstellungen")
     Button(
         onClick = {
             gamePhase.value = GamePhases.SET_INITIAL_PINS
         },
         content = { Text("Start") }
     )
+    settings(columnCount, columnSize)
 }
 
 @Composable
-fun setInitialPins(gamePhase: MutableState<GamePhases>) {
+fun setInitialPins(gamePhase: MutableState<GamePhases>, solution: MutableList<Pin>, columnSize: MutableState<Int>) {
+    Text("Lösung setzen")
+
+    repeat(columnSize.value) {
+        solution.add(Pin(Color.Black))
+    }
+
+    Board.column(solution, columnSize)
+
     Button(
         onClick = {
+            if(!solution.none { it.color == Color.Black }) return@Button
+
+            solution.forEach { pin ->
+                println(pin.color.toArgb())
+            }
+
             gamePhase.value = GamePhases.PLAYING
         },
-        content = { Text("Fertig") }
+        content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt") }
     )
 }
 
@@ -91,11 +107,15 @@ fun playing(
     columnCount: MutableState<Int>,
     gamePhase: MutableState<GamePhases>
 ) {
+    Text("Lösen")
+
     Board.columns(columns, columnSize)
 }
 
 @Composable
 fun finished(gamePhase: MutableState<GamePhases>) {
+    Text("Ende")
+
     Button(
         onClick = {
             gamePhase.value = GamePhases.BEFORE_GAME

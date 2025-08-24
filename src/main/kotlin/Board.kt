@@ -77,7 +77,6 @@ object Board {
                                         .clickable {
                                             pin.color = color.color
                                             showPopup = false
-                                            println("Selected color ${color.color}")
                                         }
                                     )
                                 }
@@ -98,31 +97,11 @@ object Board {
                                     .clickable {
                                         pin.color = Color.Black
                                         showPopup = false
-                                        println("Reset pin color")
                                     }
                                 )
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun placeablePins() {
-        Row(
-            Modifier
-                .size((45 * 4).dp, 45.dp)
-        ) {
-            for(color in PinColors.entries) {
-                val pin = Pin(color.color)
-                Box (Modifier
-                    .padding(5.dp)
-                    .size(35.dp)
-                    .background(pin.initialColor, CircleShape)
-                    .clip(CircleShape)) {
-
                 }
             }
         }
