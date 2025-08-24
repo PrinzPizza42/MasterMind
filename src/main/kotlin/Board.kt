@@ -3,13 +3,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -20,24 +21,24 @@ import androidx.compose.ui.window.Popup
 
 object Board {
     @Composable
-    fun columns(columns: MutableList<List<Pin>>) {
+    fun columns(columns: SnapshotStateList<SnapshotStateList<Pin>>, columnSize: MutableState<Int>) {
             Row (
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.Green)
             ) {
                 for (column in columns) {
-                    column(column)
+                    column(column, columnSize)
                 }
                 println(columns.size)
             }
     }
 
     @Composable
-    fun column(pins: List<Pin>) {
+    fun column(pins: List<Pin>, columnSize: MutableState<Int>) {
         Column(
             modifier = Modifier
-                .size(45.dp, (45 * 4).dp)
+                .size(45.dp, (45 * columnSize.value).dp)
                 .background(Color.White)
         ) {
             for (pin in pins) {
@@ -48,7 +49,7 @@ object Board {
                     modifier = Modifier
                         .padding(5.dp)
                         .size(35.dp)
-                        .background(pin?.color ?: Color.Black, CircleShape)
+                        .background(pin.color, CircleShape)
                         .clip(CircleShape)
                         .clickable{ showPopup = true }
                 )
