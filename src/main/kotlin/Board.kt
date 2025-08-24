@@ -43,7 +43,7 @@ object Board {
         ) {
             for (pin in pins) {
                 var showPopup by remember { mutableStateOf(false) }
-                var boxPosition by remember { mutableStateOf(Offset.Zero) }
+                val boxPosition by remember { mutableStateOf(Offset.Zero) }
 
                 Box(
                     modifier = Modifier

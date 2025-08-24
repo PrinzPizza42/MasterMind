@@ -1,5 +1,6 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -17,6 +18,7 @@ fun App() {
     val columnSize = remember { mutableStateOf(5) }
     val columnCount = remember { mutableStateOf(8) }
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
+    val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
 
     // initial filling of list
     LaunchedEffect(Unit) {
@@ -51,78 +53,126 @@ fun App() {
     }
 
     Column {
-        Board.columns(columns, columnSize)
+        when (gamePhase.value) {
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase)
+            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase)
+            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase)
+            GamePhases.FINISHED -> finished(gamePhase)
+        }
 
-        Board.placeablePins()
-
-        //Changeable Values
-        val focusManager = LocalFocusManager.current
-        
-        //column amount
-        var columnAmountValue by remember { mutableStateOf(columnCount.value.toString()) }
-        TextField(
-            value = columnAmountValue,
-            onValueChange = { text ->
-                columnAmountValue = text
-            },
-            modifier = Modifier.onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown) {
-                    if(columnAmountValue.toIntOrNull() == null) return@onPreviewKeyEvent true
-
-                    when (event.key) {
-                        Key.Enter -> {
-                            columnCount.value = columnAmountValue.toInt()
-
-                            focusManager.clearFocus()
-                            true
-                        }
-                        Key.Escape -> {
-                            focusManager.clearFocus()
-                            true
-                        }
-                        else -> false
-                    }
-                } else {
-                    false
-                }
-            },
-            label = { Text("Anzahl der Reihen") },
-            isError = columnAmountValue.toIntOrNull() == null
-        )
-
-        //column size
-        var columnSizeValue by remember { mutableStateOf(columnSize.value.toString()) }
-        TextField(
-            value = columnSizeValue,
-            onValueChange = { text ->
-                columnSizeValue = text
-            },
-            modifier = Modifier.onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown) {
-                    if(columnSizeValue.toIntOrNull() == null) return@onPreviewKeyEvent true
-
-                    when (event.key) {
-                        Key.Enter -> {
-                            columnSize.value = columnSizeValue.toInt()
-                            println("Set column size: ${columnSize.value}")
-
-                            focusManager.clearFocus()
-                            true
-                        }
-                        Key.Escape -> {
-                            focusManager.clearFocus()
-                            true
-                        }
-                        else -> false
-                    }
-                } else {
-                    false
-                }
-            },
-            label = { Text("Größe der Reihen") },
-            isError = columnSizeValue.toIntOrNull() == null
-        )
+        settings(columnCount, columnSize)
     }
+}
+
+@Composable
+fun beforeGame(gamePhase: MutableState<GamePhases>) {
+    Button(
+        onClick = {
+            gamePhase.value = GamePhases.SET_INITIAL_PINS
+        },
+        content = { Text("Start") }
+    )
+}
+
+@Composable
+fun setInitialPins(gamePhase: MutableState<GamePhases>) {
+    Button(
+        onClick = {
+            gamePhase.value = GamePhases.PLAYING
+        },
+        content = { Text("Fertig") }
+    )
+}
+
+@Composable
+fun playing(
+    columns: SnapshotStateList<SnapshotStateList<Pin>>,
+    columnSize: MutableState<Int>,
+    columnCount: MutableState<Int>,
+    gamePhase: MutableState<GamePhases>
+) {
+    Board.columns(columns, columnSize)
+}
+
+@Composable
+fun finished(gamePhase: MutableState<GamePhases>) {
+    Button(
+        onClick = {
+            gamePhase.value = GamePhases.BEFORE_GAME
+        },
+        content = { Text("Neustarten") }
+    )
+}
+
+@Composable
+fun settings(columnCount: MutableState<Int>, columnSize: MutableState<Int>) {
+    //Changeable Values
+    val focusManager = LocalFocusManager.current
+
+    //column amount
+    var columnAmountValue by remember { mutableStateOf(columnCount.value.toString()) }
+    TextField(
+        value = columnAmountValue,
+        onValueChange = { text ->
+            columnAmountValue = text
+        },
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown) {
+                if(columnAmountValue.toIntOrNull() == null) return@onPreviewKeyEvent true
+
+                when (event.key) {
+                    Key.Enter -> {
+                        columnCount.value = columnAmountValue.toInt()
+
+                        focusManager.clearFocus()
+                        true
+                    }
+                    Key.Escape -> {
+                        focusManager.clearFocus()
+                        true
+                    }
+                    else -> false
+                }
+            } else {
+                false
+            }
+        },
+        label = { Text("Anzahl der Reihen") },
+        isError = columnAmountValue.toIntOrNull() == null
+    )
+
+    //column size
+    var columnSizeValue by remember { mutableStateOf(columnSize.value.toString()) }
+    TextField(
+        value = columnSizeValue,
+        onValueChange = { text ->
+            columnSizeValue = text
+        },
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown) {
+                if(columnSizeValue.toIntOrNull() == null) return@onPreviewKeyEvent true
+
+                when (event.key) {
+                    Key.Enter -> {
+                        columnSize.value = columnSizeValue.toInt()
+                        println("Set column size: ${columnSize.value}")
+
+                        focusManager.clearFocus()
+                        true
+                    }
+                    Key.Escape -> {
+                        focusManager.clearFocus()
+                        true
+                    }
+                    else -> false
+                }
+            } else {
+                false
+            }
+        },
+        label = { Text("Größe der Reihen") },
+        isError = columnSizeValue.toIntOrNull() == null
+    )
 }
 
 fun main() = application {
