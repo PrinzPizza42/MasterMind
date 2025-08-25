@@ -8,6 +8,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,11 +50,14 @@ object Board {
                                 .background(Color.LightGray.copy(alpha = 0.5f))
                                 .clickable(enabled = false){}
                                 .zIndex(2f)
-                                .size(45.dp, (45 * columnSize.value).dp)
+                                .size(45.dp, ((45 * columnSize.value) + (30 * columnSize.value)).dp)
+                                .width(45.dp)
                         )
                     }
 
                     Column {
+                        evaluationColumn(perfectPins, rightColorPin, columnSize)
+
                         column(column, columnSize, ready)
 
                         if(currentColumn.value == columns.indexOf(column)) {
@@ -65,7 +70,6 @@ object Board {
                                         val evaluation = evaluate(column, solution)
                                         perfectPins.value = evaluation.first
                                         rightColorPin.value = evaluation.second
-                                        println("Evaluation: perfect pins: ${evaluation.first}, right color pins: ${evaluation.second}")
 
                                         currentColumn.value++
                                         println("Column ${currentColumn.value}")
@@ -191,7 +195,40 @@ object Board {
     }
 
     @Composable
-    fun evaluationPinsColumn() {
+    fun evaluationColumn(
+        perfectPins: MutableState<Int>,
+        rightColorPin: MutableState<Int>,
+        columnSize: MutableState<Int>
+    ) {
+        val colors = remember { mutableStateListOf<Color>() }
 
+        colors.clear()
+        repeat(perfectPins.value) {
+            colors.add(Color.Red)
+        }
+        repeat(rightColorPin.value) {
+            colors.add(Color.Gray)
+        }
+        if(perfectPins.value + rightColorPin.value <= columnSize.value) {
+            repeat(columnSize.value- (perfectPins.value + rightColorPin.value)) {
+                colors.add(Color.Black)
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .size(45.dp, (30 * columnSize.value).dp)
+                .background(Color.White)
+        ) {
+            for (color in colors) {
+                Box(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .size(20.dp)
+                        .background(color, CircleShape)
+                        .clip(CircleShape)
+                )
+            }
+        }
     }
 }
