@@ -71,12 +71,17 @@ object Board {
                                         perfectPins.value = evaluation.first
                                         rightColorPin.value = evaluation.second
 
+                                        if(evaluation.first == columnSize.value) {
+                                            gamePhase.value = GamePhases.FINISHED
+                                            println("game won")
+                                        }
+
                                         currentColumn.value++
                                         println("Column ${currentColumn.value}")
                                     }
                                     else {
                                         gamePhase.value = GamePhases.FINISHED
-                                        println("game finished")
+                                        println("game lost")
                                     }
                                 },
                                 content = {
