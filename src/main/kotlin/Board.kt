@@ -37,7 +37,7 @@ object Board {
             for (column in columns) {
                 val ready = remember { mutableStateOf(false) }
 
-                //Evalution
+                //Evaluation
                 val perfectPins = remember { mutableStateOf(0) } //right position and color
                 val rightColorPin = remember { mutableStateOf(0) } // only right color
 
@@ -93,21 +93,23 @@ object Board {
         var perfectPins = 0
         var rightColorPins = 0
 
-        column.forEach { pin ->
-            val index = column.indexOf(pin)
+        val solutionCopy: MutableList<Pin?> = solution.toMutableList()
 
-            val sameColor: Pin? = solution.firstOrNull {
-                it.color == pin.color
+        //Perfect Pins
+        column.forEachIndexed { i, pin ->
+            if (solutionCopy[i]?.color == pin.color) {
+                perfectPins++
+                solutionCopy[i] = null
             }
+        }
 
-            if(sameColor != null) {
-                if(solution.indexOf(sameColor) == index) {
-                    perfectPins++
-                    println("Found perfect pin at solution index ${solution.indexOf(sameColor)} color ${sameColor.color}")
-                }
-                else {
+        //Right color Pins
+        column.forEachIndexed { i, pin ->
+            if (solution[i].color != pin.color) {
+                val j = solutionCopy.indexOfFirst { it?.color == pin.color }
+                if (j >= 0) {
                     rightColorPins++
-                    println("Found right color pin")
+                    solutionCopy[j] = null
                 }
             }
         }
