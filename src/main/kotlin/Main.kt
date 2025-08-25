@@ -58,7 +58,7 @@ fun App() {
         when (gamePhase.value) {
             GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount)
             GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize)
-            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase)
+            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution)
             GamePhases.FINISHED -> finished(gamePhase)
         }
     }
@@ -84,7 +84,7 @@ fun setInitialPins(gamePhase: MutableState<GamePhases>, solution: MutableList<Pi
         solution.add(Pin(Color.Black))
     }
 
-    Board.column(solution, columnSize)
+    Board.column(solution, columnSize, mutableStateOf(false))
 
     Button(
         onClick = {
@@ -105,11 +105,14 @@ fun playing(
     columns: SnapshotStateList<SnapshotStateList<Pin>>,
     columnSize: MutableState<Int>,
     columnCount: MutableState<Int>,
-    gamePhase: MutableState<GamePhases>
+    gamePhase: MutableState<GamePhases>,
+    solution: MutableList<Pin>
 ) {
     Text("Lösen")
 
-    Board.columns(columns, columnSize)
+    val currentColumn = remember { mutableStateOf(0) }
+
+    Board.columns(columns, columnSize, currentColumn, gamePhase, solution)
 }
 
 @Composable

@@ -3,6 +3,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -18,24 +19,104 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.zIndex
 
 object Board {
     @Composable
-    fun columns(columns: SnapshotStateList<SnapshotStateList<Pin>>, columnSize: MutableState<Int>) {
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Green)
-            ) {
-                for (column in columns) {
-                    column(column, columnSize)
+    fun columns(
+        columns: SnapshotStateList<SnapshotStateList<Pin>>,
+        columnSize: MutableState<Int>,
+        currentColumn: MutableState<Int>,
+        gamePhase: MutableState<GamePhases>,
+        solution: MutableList<Pin>
+    ) {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            for (column in columns) {
+                val ready = remember { mutableStateOf(false) }
+
+                //Evalution
+                val perfectPins = remember { mutableStateOf(0) } //right position and color
+                val rightColorPin = remember { mutableStateOf(0) } // only right color
+
+                Box {
+                    if(currentColumn.value != columns.indexOf(column)) {
+                        Box(
+                            Modifier
+                                .background(Color.LightGray.copy(alpha = 0.5f))
+                                .clickable(enabled = false){}
+                                .zIndex(2f)
+                                .size(45.dp, (45 * columnSize.value).dp)
+                        )
+                    }
+
+                    Column {
+                        column(column, columnSize, ready)
+
+                        if(currentColumn.value == columns.indexOf(column)) {
+                            Button(
+                                modifier = Modifier
+                                    .size(45.dp)
+                                    .clip(RoundedCornerShape(5.dp)),
+                                onClick = {
+                                    if(currentColumn.value < columns.size - 1) {
+                                        val evaluation = evaluate(column, solution)
+                                        perfectPins.value = evaluation.first
+                                        rightColorPin.value = evaluation.second
+                                        println("Evaluation: perfect pins: ${evaluation.first}, right color pins: ${evaluation.second}")
+
+                                        currentColumn.value++
+                                        println("Column ${currentColumn.value}")
+                                    }
+                                    else {
+                                        gamePhase.value = GamePhases.FINISHED
+                                        println("game finished")
+                                    }
+                                },
+                                content = {
+                                    Text("✓")
+                                },
+                                enabled = column.none {it.color == Color.Black}
+                            )
+                        }
+                    }
                 }
-                println(columns.size)
             }
+        }
+    }
+
+    private fun evaluate(column: List<Pin>, solution: MutableList<Pin>): Pair<Int, Int> {
+        println("Evaluating $column")
+
+        var perfectPins = 0
+        var rightColorPins = 0
+
+        column.forEach { pin ->
+            val index = column.indexOf(pin)
+
+            val sameColor: Pin? = solution.firstOrNull {
+                it.color == pin.color
+            }
+
+            if(sameColor != null) {
+                if(solution.indexOf(sameColor) == index) {
+                    perfectPins++
+                    println("Found perfect pin at solution index ${solution.indexOf(sameColor)} color ${sameColor.color}")
+                }
+                else {
+                    rightColorPins++
+                    println("Found right color pin")
+                }
+            }
+        }
+
+        return Pair(perfectPins, rightColorPins)
     }
 
     @Composable
-    fun column(pins: List<Pin>, columnSize: MutableState<Int>) {
+    fun column(pins: List<Pin>, columnSize: MutableState<Int>, ready: MutableState<Boolean>) {
         Column(
             modifier = Modifier
                 .size(45.dp, (45 * columnSize.value).dp)
@@ -105,5 +186,10 @@ object Board {
                 }
             }
         }
+    }
+
+    @Composable
+    fun evaluationPinsColumn() {
+
     }
 }
