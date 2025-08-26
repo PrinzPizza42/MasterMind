@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +29,9 @@ object Board {
         columnSize: MutableState<Int>,
         currentColumn: MutableState<Int>,
         gamePhase: MutableState<GamePhases>,
-        solution: MutableList<Pin>
+        solution: MutableList<Pin>,
+        won: MutableState<Boolean>,
+        neededTries: MutableState<Int>
     ) {
         Row (
             modifier = Modifier
@@ -72,14 +73,19 @@ object Board {
                                         rightColorPin.value = evaluation.second
 
                                         if(evaluation.first == columnSize.value) {
+                                            won.value = true
+                                            neededTries.value = currentColumn.value + 1
+
                                             gamePhase.value = GamePhases.FINISHED
                                             println("game won")
                                         }
-
-                                        currentColumn.value++
-                                        println("Column ${currentColumn.value}")
+                                        else {
+                                            currentColumn.value++
+                                            println("Column ${currentColumn.value}")
+                                        }
                                     }
                                     else {
+
                                         gamePhase.value = GamePhases.FINISHED
                                         println("game lost")
                                     }

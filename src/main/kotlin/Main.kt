@@ -22,6 +22,10 @@ fun App() {
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
 
+    //End of game statistics
+    val won = remember { mutableStateOf(false) }
+    val neededTries = remember { mutableStateOf(0) }
+
     // initial filling of list
     LaunchedEffect(Unit) {
         repeat(columnCount.value) {
@@ -58,8 +62,8 @@ fun App() {
         when (gamePhase.value) {
             GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount)
             GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize)
-            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution)
-            GamePhases.FINISHED -> finished(gamePhase)
+            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries)
+            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize)
         }
     }
 }
@@ -80,6 +84,7 @@ fun beforeGame(gamePhase: MutableState<GamePhases>, columnSize: MutableState<Int
 fun setInitialPins(gamePhase: MutableState<GamePhases>, solution: MutableList<Pin>, columnSize: MutableState<Int>) {
     Text("Lösung setzen")
 
+    solution.clear()
     repeat(columnSize.value) {
         solution.add(Pin(Color.Black))
     }
@@ -106,18 +111,33 @@ fun playing(
     columnSize: MutableState<Int>,
     columnCount: MutableState<Int>,
     gamePhase: MutableState<GamePhases>,
-    solution: MutableList<Pin>
+    solution: MutableList<Pin>,
+    won: MutableState<Boolean>,
+    neededTries: MutableState<Int>,
 ) {
     Text("Lösen")
 
     val currentColumn = remember { mutableStateOf(0) }
 
-    Board.columns(columns, columnSize, currentColumn, gamePhase, solution)
+    Board.columns(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries)
 }
 
 @Composable
-fun finished(gamePhase: MutableState<GamePhases>) {
+fun finished(
+    gamePhase: MutableState<GamePhases>,
+    won: MutableState<Boolean>,
+    neededTries: MutableState<Int>,
+    columns: SnapshotStateList<SnapshotStateList<Pin>>,
+    solution: MutableList<Pin>,
+    columnCount: MutableState<Int>,
+    columnSize: MutableState<Int>
+) {
     Text("Ende")
+
+    if(won.value) Text("Du hast das Muster gefunden")
+    else Text("Du hast das Muster nicht rechtzeitig gefunden")
+
+    Text("Gebrauchte Versuche: ${neededTries.value}")
 
     Button(
         onClick = {
@@ -125,6 +145,21 @@ fun finished(gamePhase: MutableState<GamePhases>) {
         },
         content = { Text("Neustarten") }
     )
+
+    resetValues(columns, solution, columnCount, columnSize)
+}
+
+@Composable
+private fun resetValues(
+    columns: SnapshotStateList<SnapshotStateList<Pin>>,
+    solution: MutableList<Pin>,
+    columnCount: MutableState<Int>,
+    columnSize: MutableState<Int>
+) {
+    columns.clear()
+    repeat(columnCount.value) {
+        columns.add(MutableList(columnSize.value) { Pin(Color.Black) }.toMutableStateList())
+    }
 }
 
 @Composable
