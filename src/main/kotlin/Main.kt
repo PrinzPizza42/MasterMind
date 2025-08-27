@@ -16,11 +16,12 @@ import androidx.compose.ui.window.application
 @Composable
 @Preview
 fun App() {
-    val columnSize = remember { mutableStateOf(5) }
+    val columnSize = remember { mutableStateOf(4) }
     val columnCount = remember { mutableStateOf(8) }
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
+    val colorAmount = remember { mutableStateOf(4) }
 
     //End of game statistics
     val won = remember { mutableStateOf(false) }
@@ -60,16 +61,21 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount)
-            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize)
-            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries)
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount)
+            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount)
+            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
             GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize)
         }
     }
 }
 
 @Composable
-fun beforeGame(gamePhase: MutableState<GamePhases>, columnSize: MutableState<Int>, columnCount: MutableState<Int>) {
+fun beforeGame(
+    gamePhase: MutableState<GamePhases>,
+    columnSize: MutableState<Int>,
+    columnCount: MutableState<Int>,
+    colorAmount: MutableState<Int>
+) {
     Text("Voreinstellungen")
     Button(
         onClick = {
@@ -77,11 +83,16 @@ fun beforeGame(gamePhase: MutableState<GamePhases>, columnSize: MutableState<Int
         },
         content = { Text("Start") }
     )
-    settings(columnCount, columnSize)
+    settings(columnCount, columnSize, colorAmount)
 }
 
 @Composable
-fun setInitialPins(gamePhase: MutableState<GamePhases>, solution: MutableList<Pin>, columnSize: MutableState<Int>) {
+fun setInitialPins(
+    gamePhase: MutableState<GamePhases>,
+    solution: MutableList<Pin>,
+    columnSize: MutableState<Int>,
+    colorAmount: MutableState<Int>
+) {
     Text("Lösung setzen")
 
     solution.clear()
@@ -89,7 +100,7 @@ fun setInitialPins(gamePhase: MutableState<GamePhases>, solution: MutableList<Pi
         solution.add(Pin(Color.Black))
     }
 
-    Board.column(solution, columnSize, mutableStateOf(false))
+    Board.column(solution, columnSize, mutableStateOf(false), colorAmount)
 
     Button(
         onClick = {
@@ -114,12 +125,13 @@ fun playing(
     solution: MutableList<Pin>,
     won: MutableState<Boolean>,
     neededTries: MutableState<Int>,
+    colorAmount: MutableState<Int>,
 ) {
     Text("Lösen")
 
     val currentColumn = remember { mutableStateOf(0) }
 
-    Board.columns(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries)
+    Board.columns(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount)
 }
 
 @Composable
@@ -163,7 +175,7 @@ private fun resetValues(
 }
 
 @Composable
-fun settings(columnCount: MutableState<Int>, columnSize: MutableState<Int>) {
+fun settings(columnCount: MutableState<Int>, columnSize: MutableState<Int>, colorAmount: MutableState<Int>) {
     //Changeable Values
     val focusManager = LocalFocusManager.current
 
@@ -230,6 +242,39 @@ fun settings(columnCount: MutableState<Int>, columnSize: MutableState<Int>) {
         },
         label = { Text("Größe der Reihen") },
         isError = columnSizeValue.toIntOrNull() == null
+    )
+
+    //color amount
+    var colorAmountValue by remember { mutableStateOf(colorAmount.value.toString()) }
+    TextField(
+        value = colorAmountValue,
+        onValueChange = { text ->
+            colorAmountValue = text
+        },
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown) {
+                if(colorAmountValue.toIntOrNull() == null) return@onPreviewKeyEvent true
+
+                when (event.key) {
+                    Key.Enter -> {
+                        colorAmount.value = colorAmountValue.toInt()
+                        println("Set column size: ${colorAmount.value}")
+
+                        focusManager.clearFocus()
+                        true
+                    }
+                    Key.Escape -> {
+                        focusManager.clearFocus()
+                        true
+                    }
+                    else -> false
+                }
+            } else {
+                false
+            }
+        },
+        label = { Text("Menge der auswählbaren Farben (maximal ${PinColors.entries.size})") },
+        isError = colorAmountValue.toIntOrNull() == null
     )
 }
 

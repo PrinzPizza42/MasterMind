@@ -31,7 +31,8 @@ object Board {
         gamePhase: MutableState<GamePhases>,
         solution: MutableList<Pin>,
         won: MutableState<Boolean>,
-        neededTries: MutableState<Int>
+        neededTries: MutableState<Int>,
+        colorAmount: MutableState<Int>
     ) {
         Row (
             modifier = Modifier
@@ -59,7 +60,7 @@ object Board {
                     Column {
                         evaluationColumn(perfectPins, rightColorPin, columnSize)
 
-                        column(column, columnSize, ready)
+                        column(column, columnSize, ready, colorAmount)
 
                         if(currentColumn.value == columns.indexOf(column)) {
                             Button(
@@ -133,7 +134,12 @@ object Board {
     }
 
     @Composable
-    fun column(pins: List<Pin>, columnSize: MutableState<Int>, ready: MutableState<Boolean>) {
+    fun column(
+        pins: List<Pin>,
+        columnSize: MutableState<Int>,
+        ready: MutableState<Boolean>,
+        colorAmount: MutableState<Int>
+        ) {
         Column(
             modifier = Modifier
                 .size(45.dp, (45 * columnSize.value).dp)
@@ -166,7 +172,10 @@ object Board {
                             Spacer(modifier = Modifier.height(8.dp))
                             Row {
                                 for(color in PinColors.entries) {
+                                    if(PinColors.entries.indexOf(color) >= colorAmount.value) continue
+
                                     val colorPickerPin = Pin(color.color)
+
                                     Box (Modifier
                                         .padding(5.dp)
                                         .size(35.dp)
