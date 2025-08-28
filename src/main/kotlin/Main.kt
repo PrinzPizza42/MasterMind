@@ -258,7 +258,7 @@ fun settings(columnCount: MutableState<Int>, columnSize: MutableState<Int>, colo
                 when (event.key) {
                     Key.Enter -> {
                         colorAmount.value = colorAmountValue.toInt()
-                        println("Set column size: ${colorAmount.value}")
+                        println("Set color amount: ${colorAmount.value}")
 
                         focusManager.clearFocus()
                         true
