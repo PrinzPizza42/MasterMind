@@ -1,17 +1,27 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import kotlin.random.Random
 
 @Composable
 @Preview
@@ -22,6 +32,8 @@ fun App() {
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
     val colorAmount = remember { mutableStateOf(4) }
+
+    val gameResults = remember { mutableListOf<GameResult>() }
 
     //End of game statistics
     val won = remember { mutableStateOf(false) }
@@ -61,10 +73,10 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount)
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults)
             GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount)
             GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
-            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize)
+            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults)
         }
     }
 }
@@ -74,16 +86,64 @@ fun beforeGame(
     gamePhase: MutableState<GamePhases>,
     columnSize: MutableState<Int>,
     columnCount: MutableState<Int>,
-    colorAmount: MutableState<Int>
+    colorAmount: MutableState<Int>,
+    gameResults: MutableList<GameResult>
 ) {
-    Text("Voreinstellungen")
-    Button(
-        onClick = {
-            gamePhase.value = GamePhases.SET_INITIAL_PINS
-        },
-        content = { Text("Start") }
-    )
-    settings(columnCount, columnSize, colorAmount)
+    Row {
+        Column {
+            Text("Voreinstellungen")
+            Button(
+                onClick = {
+                    gamePhase.value = GamePhases.SET_INITIAL_PINS
+                },
+                content = { Text("Start") }
+            )
+            settings(columnCount, columnSize, colorAmount)
+        }
+
+        Column( // need a lazy column or scrollable
+            Modifier
+                .background(Color.LightGray)
+        ) {
+            val shape = remember { RoundedCornerShape(5.dp) }
+            Box(
+                Modifier
+                    .padding(0.dp, 0.dp, 0.dp, 15.dp)
+                    .shadow(5.dp, shape)
+                    .background(Color.LightGray, shape)
+                    .clip(shape)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text("Spiele in dieser Session:", Modifier.padding(5.dp))
+            }
+
+            Column(
+                Modifier.verticalScroll(rememberScrollState())
+            ) {
+
+
+                if(gameResults.size > 0) {
+                    for(result in gameResults) {
+                        val wonString = if(result.won) "gewonnen" else "verloren"
+                        Column(
+                            Modifier
+                                .shadow(5.dp, shape)
+                                .padding(0.dp, 7.dp)
+                                .width(200.dp)
+                                .background(Color.White, shape)
+                                .clip(shape)
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("Spiel ${gameResults.indexOf(result) + 1}", Modifier.padding(5.dp))
+                            // name of both players
+                            Text("Spieler hat nach ${result.tries} Versuchen $wonString")
+                        }
+                    }
+                }
+                else Text("Noch keine Spiele gespielt")
+            }
+        }
+    }
 }
 
 @Composable
@@ -142,7 +202,8 @@ fun finished(
     columns: SnapshotStateList<SnapshotStateList<Pin>>,
     solution: MutableList<Pin>,
     columnCount: MutableState<Int>,
-    columnSize: MutableState<Int>
+    columnSize: MutableState<Int>,
+    gameResults: MutableList<GameResult>
 ) {
     Text("Ende")
 
@@ -157,6 +218,10 @@ fun finished(
         },
         content = { Text("Neustarten") }
     )
+
+    val result: GameResult = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value)
+    println("Result: $result")
+    gameResults.addLast(result)
 
     resetValues(columns, solution, columnCount, columnSize)
 }
@@ -175,7 +240,11 @@ private fun resetValues(
 }
 
 @Composable
-fun settings(columnCount: MutableState<Int>, columnSize: MutableState<Int>, colorAmount: MutableState<Int>) {
+fun settings(
+    columnCount: MutableState<Int>,
+    columnSize: MutableState<Int>,
+    colorAmount: MutableState<Int>
+) {
     //Changeable Values
     val focusManager = LocalFocusManager.current
 
