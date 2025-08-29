@@ -1,5 +1,6 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,14 +11,19 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import kotlin.random.Random
@@ -38,13 +44,13 @@ fun App() {
     val won = remember { mutableStateOf(false) }
     val neededTries = remember { mutableStateOf(0) }
 
-//    LaunchedEffect(Unit) {
-//        val newGameResults = mutableListOf<GameResult>()
-//        repeat(10) {
-//            newGameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10)))
-//        }
-//        gameResults.value = newGameResults
-//    }
+    LaunchedEffect(Unit) {
+        val newGameResults = mutableListOf<GameResult>()
+        repeat(10) {
+            newGameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10), Random.nextInt(8)))
+        }
+        gameResults.value = newGameResults
+    }
 
     // initial filling of list
     LaunchedEffect(Unit) {
@@ -83,11 +89,12 @@ fun App() {
             GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults)
             GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount)
             GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
-            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults)
+            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount)
         }
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun beforeGame(
     gamePhase: MutableState<GamePhases>,
@@ -136,12 +143,22 @@ fun beforeGame(
                 )
             }
 
+            val cursorPosition = remember { mutableStateOf(Offset.Zero) }
+
             Column(
-                Modifier.verticalScroll(rememberScrollState())
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .onPointerEvent(PointerEventType.Move) {
+                        val position = it.changes.first().position
+                        cursorPosition.value = position
+                    }
             ) {
                 if(gameResults.value.size > 0) {
                     for(result in gameResults.value) {
+                        var showPopup by remember { mutableStateOf(false) }
                         val wonString = if(result.won) "gewonnen" else "verloren"
+                        val index = gameResults.value.indexOf(result)
+
                         Column(
                             Modifier
                                 .shadow(5.dp, shape)
@@ -150,10 +167,34 @@ fun beforeGame(
                                 .background(Color.White, shape)
                                 .clip(shape)
                                 .align(Alignment.CenterHorizontally)
+                                .clickable {
+                                    showPopup = true
+                                }
                         ) {
-                            Text("Spiel ${gameResults.value.indexOf(result) + 1}", Modifier.padding(5.dp))
+                            Text("Spiel ${index + 1}", Modifier.padding(5.dp))
                             // name of both players
                             Text("Spieler hat nach ${result.tries} Versuchen $wonString")
+                        }
+
+                        if(showPopup) {
+                            Popup(
+                                offset = IntOffset.Zero.copy(x = 210, y = cursorPosition.value.y.toInt()),
+                                onDismissRequest = { showPopup = false }
+                            ) {
+                                Column(
+                                    Modifier
+                                        .background(Color.White, RoundedCornerShape(5.dp))
+                                ) {
+                                    Text("Spiel: ${gameResults.value.indexOf(result) + 1}")
+//                                    Text("Spieler: ${result.player}")
+                                    Text("Versuche: ${result.tries}")
+                                    Text("Ergebnis: $wonString")
+                                    Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp))
+                                    Text("  Reihengröße: ${result.columnSize}")
+                                    Text("  Reihenmenge: ${result.columnCount}")
+                                    Text("  Farbenmenge: ${result.colorAmount}")
+                                }
+                            }
                         }
                     }
                 }
@@ -220,7 +261,8 @@ fun finished(
     solution: MutableList<Pin>,
     columnCount: MutableState<Int>,
     columnSize: MutableState<Int>,
-    gameResults: MutableState<MutableList<GameResult>>
+    gameResults: MutableState<MutableList<GameResult>>,
+    colorAmount: MutableState<Int>
 ) {
     Text("Ende")
 
@@ -236,7 +278,7 @@ fun finished(
         content = { Text("Neustarten") }
     )
 
-    val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value)
+    val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value, colorAmount.value)
     println("Result: $result")
     gameResults.value.addLast(result)
 
