@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import kotlin.random.Random
 
 @Composable
 @Preview
@@ -31,16 +32,18 @@ fun App() {
     val solution = remember { mutableListOf<Pin>() }
     val colorAmount = remember { mutableStateOf(4) }
 
-    val gameResults = remember { mutableListOf<GameResult>() }
+    val gameResults = remember { mutableStateOf(mutableListOf<GameResult>()) }
 
     //End of game statistics
     val won = remember { mutableStateOf(false) }
     val neededTries = remember { mutableStateOf(0) }
 
 //    LaunchedEffect(Unit) {
+//        val newGameResults = mutableListOf<GameResult>()
 //        repeat(10) {
-//            gameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10)))
+//            newGameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10)))
 //        }
+//        gameResults.value = newGameResults
 //    }
 
     // initial filling of list
@@ -91,7 +94,7 @@ fun beforeGame(
     columnSize: MutableState<Int>,
     columnCount: MutableState<Int>,
     colorAmount: MutableState<Int>,
-    gameResults: MutableList<GameResult>
+    gameResults: MutableState<MutableList<GameResult>>
 ) {
     Row {
         Column {
@@ -110,22 +113,34 @@ fun beforeGame(
                 .background(Color.LightGray)
         ) {
             val shape = remember { RoundedCornerShape(5.dp) }
-            Box(
-                Modifier
-                    .padding(0.dp, 0.dp, 0.dp, 15.dp)
-                    .shadow(5.dp, shape)
-                    .background(Color.LightGray, shape)
-                    .clip(shape)
-                    .align(Alignment.CenterHorizontally)
-            ) {
-                Text("Spiele in dieser Session:", Modifier.padding(5.dp))
+            Row(Modifier.align(Alignment.CenterHorizontally)) {
+                Box(
+                    Modifier
+                        .padding(0.dp, 0.dp, 0.dp, 15.dp)
+                        .shadow(5.dp, shape)
+                        .background(Color.LightGray, shape)
+                        .clip(shape)
+                ) {
+                    Text("Spiele in dieser Session:", Modifier.padding(5.dp))
+                }
+                Button(
+                    modifier = Modifier,
+                    onClick = {
+                        gameResults.value = mutableListOf()
+                        println("Reset game results: $gameResults")
+                    },
+                    content = {
+                        Text("Reset")
+                    },
+                    enabled = gameResults.value.size > 0
+                )
             }
 
             Column(
                 Modifier.verticalScroll(rememberScrollState())
             ) {
-                if(gameResults.size > 0) {
-                    for(result in gameResults) {
+                if(gameResults.value.size > 0) {
+                    for(result in gameResults.value) {
                         val wonString = if(result.won) "gewonnen" else "verloren"
                         Column(
                             Modifier
@@ -136,7 +151,7 @@ fun beforeGame(
                                 .clip(shape)
                                 .align(Alignment.CenterHorizontally)
                         ) {
-                            Text("Spiel ${gameResults.indexOf(result) + 1}", Modifier.padding(5.dp))
+                            Text("Spiel ${gameResults.value.indexOf(result) + 1}", Modifier.padding(5.dp))
                             // name of both players
                             Text("Spieler hat nach ${result.tries} Versuchen $wonString")
                         }
@@ -205,7 +220,7 @@ fun finished(
     solution: MutableList<Pin>,
     columnCount: MutableState<Int>,
     columnSize: MutableState<Int>,
-    gameResults: MutableList<GameResult>
+    gameResults: MutableState<MutableList<GameResult>>
 ) {
     Text("Ende")
 
@@ -223,7 +238,7 @@ fun finished(
 
     val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value)
     println("Result: $result")
-    gameResults.addLast(result)
+    gameResults.value.addLast(result)
 
     resetValues(columns, solution, columnCount, columnSize, neededTries)
 }
