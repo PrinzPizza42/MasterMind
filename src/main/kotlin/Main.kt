@@ -1,6 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,7 +20,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlin.random.Random
 
 @Composable
 @Preview
@@ -38,6 +36,12 @@ fun App() {
     //End of game statistics
     val won = remember { mutableStateOf(false) }
     val neededTries = remember { mutableStateOf(0) }
+
+//    LaunchedEffect(Unit) {
+//        repeat(10) {
+//            gameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10)))
+//        }
+//    }
 
     // initial filling of list
     LaunchedEffect(Unit) {
@@ -101,7 +105,7 @@ fun beforeGame(
             settings(columnCount, columnSize, colorAmount)
         }
 
-        Column( // need a lazy column or scrollable
+        Column(
             Modifier
                 .background(Color.LightGray)
         ) {
@@ -120,8 +124,6 @@ fun beforeGame(
             Column(
                 Modifier.verticalScroll(rememberScrollState())
             ) {
-
-
                 if(gameResults.size > 0) {
                     for(result in gameResults) {
                         val wonString = if(result.won) "gewonnen" else "verloren"
@@ -219,11 +221,11 @@ fun finished(
         content = { Text("Neustarten") }
     )
 
-    val result: GameResult = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value)
+    val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value)
     println("Result: $result")
     gameResults.addLast(result)
 
-    resetValues(columns, solution, columnCount, columnSize)
+    resetValues(columns, solution, columnCount, columnSize, neededTries)
 }
 
 @Composable
@@ -231,7 +233,8 @@ private fun resetValues(
     columns: SnapshotStateList<SnapshotStateList<Pin>>,
     solution: MutableList<Pin>,
     columnCount: MutableState<Int>,
-    columnSize: MutableState<Int>
+    columnSize: MutableState<Int>,
+    neededTries: MutableState<Int>
 ) {
     columns.clear()
     repeat(columnCount.value) {

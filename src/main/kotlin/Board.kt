@@ -86,6 +86,7 @@ object Board {
                                         }
                                     }
                                     else {
+                                        neededTries.value = currentColumn.value + 1
 
                                         gamePhase.value = GamePhases.FINISHED
                                         println("game lost")
