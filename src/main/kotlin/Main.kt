@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlin.random.Random
 
 @Composable
 @Preview
@@ -36,7 +36,8 @@ fun App() {
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
-    val colorAmount = remember { mutableStateOf(4) }
+    val colorAmount = remember { mutableStateOf(8) }
+    val generateInitialPins = remember { mutableStateOf(true) }
 
     val gameResults = remember { mutableStateOf(mutableListOf<GameResult>()) }
 
@@ -44,13 +45,13 @@ fun App() {
     val won = remember { mutableStateOf(false) }
     val neededTries = remember { mutableStateOf(0) }
 
-    LaunchedEffect(Unit) {
-        val newGameResults = mutableListOf<GameResult>()
-        repeat(10) {
-            newGameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10), Random.nextInt(8)))
-        }
-        gameResults.value = newGameResults
-    }
+//    LaunchedEffect(Unit) {
+//        val newGameResults = mutableListOf<GameResult>()
+//        repeat(10) {
+//            newGameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10), Random.nextInt(8)))
+//        }
+//        gameResults.value = newGameResults
+//    }
 
     // initial filling of list
     LaunchedEffect(Unit) {
@@ -86,8 +87,8 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults)
-            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount)
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins)
+            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins)
             GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
             GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount)
         }
@@ -101,7 +102,8 @@ fun beforeGame(
     columnSize: MutableState<Int>,
     columnCount: MutableState<Int>,
     colorAmount: MutableState<Int>,
-    gameResults: MutableState<MutableList<GameResult>>
+    gameResults: MutableState<MutableList<GameResult>>,
+    generateInitialPins: MutableState<Boolean>
 ) {
     Row {
         Column {
@@ -112,9 +114,10 @@ fun beforeGame(
                 },
                 content = { Text("Start") }
             )
-            settings(columnCount, columnSize, colorAmount)
+            settings(columnCount, columnSize, colorAmount, generateInitialPins)
         }
 
+        // Game Results
         Column(
             Modifier
                 .background(Color.LightGray)
@@ -128,7 +131,7 @@ fun beforeGame(
                         .background(Color.LightGray, shape)
                         .clip(shape)
                 ) {
-                    Text("Spiele in dieser Session:", Modifier.padding(5.dp))
+                    Text("Spiele in dieser Session (${gameResults.value.size}):", Modifier.padding(5.dp))
                 }
                 Button(
                     modifier = Modifier,
@@ -209,29 +212,55 @@ fun setInitialPins(
     gamePhase: MutableState<GamePhases>,
     solution: MutableList<Pin>,
     columnSize: MutableState<Int>,
-    colorAmount: MutableState<Int>
+    colorAmount: MutableState<Int>,
+    generateInitialPins: MutableState<Boolean>
 ) {
     Text("Lösung setzen")
 
     solution.clear()
-    repeat(columnSize.value) {
-        solution.add(Pin(Color.Black))
+
+    if(generateInitialPins.value) {
+        generateInitialPins(columnSize, colorAmount, solution)
+
+        gamePhase.value = GamePhases.PLAYING
     }
+    else {
+        repeat(columnSize.value) {
+            solution.add(Pin(Color.Black))
+        }
 
-    Board.column(solution, columnSize, mutableStateOf(false), colorAmount)
+        Board.column(solution, columnSize, mutableStateOf(false), colorAmount)
 
-    Button(
-        onClick = {
-            if(!solution.none { it.color == Color.Black }) return@Button
+        Button(
+            onClick = {
+                if(!solution.none { it.color == Color.Black }) return@Button
 
-            solution.forEach { pin ->
-                println(pin.color.toArgb())
-            }
+                solution.forEach { pin ->
+                    println(pin.color.toArgb())
+                }
 
-            gamePhase.value = GamePhases.PLAYING
-        },
-        content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt") }
-    )
+                gamePhase.value = GamePhases.PLAYING
+            },
+            content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt") }
+        )
+    }
+}
+
+@Composable
+fun generateInitialPins(columnSize: MutableState<Int>, colorAmount: MutableState<Int>, solution: MutableList<Pin>) {
+    println("Generating inital pins")
+    val pinColorsShortend = PinColors.entries.subList(0, colorAmount.value).toMutableList()
+    repeat(columnSize.value) {
+        val color = pinColorsShortend.random()
+
+        if(colorAmount.value >= columnSize.value) {
+            pinColorsShortend.remove(color)
+        }
+        else println("Need to use colors several times because !colorAmount.value >= columnSize.value")
+
+        solution.addLast(Pin(color.color))
+        println("added $color to solution")
+    }
 }
 
 @Composable
@@ -303,7 +332,8 @@ private fun resetValues(
 fun settings(
     columnCount: MutableState<Int>,
     columnSize: MutableState<Int>,
-    colorAmount: MutableState<Int>
+    colorAmount: MutableState<Int>,
+    generateInitialPins: MutableState<Boolean>
 ) {
     //Changeable Values
     val focusManager = LocalFocusManager.current
@@ -405,6 +435,18 @@ fun settings(
         label = { Text("Menge der auswählbaren Farben (maximal ${PinColors.entries.size})") },
         isError = colorAmountValue.toIntOrNull() == null
     )
+
+    // generate initial pins
+    Row {
+        Checkbox(
+            checked = generateInitialPins.value,
+            onCheckedChange = {
+                generateInitialPins.value = it
+                println("Changed generateInitialPins value to ${generateInitialPins.value}")
+            }
+        )
+        Text("Lösung generieren")
+    }
 }
 
 fun main() = application {
