@@ -31,6 +31,7 @@ import androidx.compose.ui.window.application
 @Composable
 @Preview
 fun App() {
+    // Settings
     val columnSize = remember { mutableStateOf(4) }
     val columnCount = remember { mutableStateOf(8) }
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
@@ -38,10 +39,11 @@ fun App() {
     val solution = remember { mutableListOf<Pin>() }
     val colorAmount = remember { mutableStateOf(8) }
     val generateInitialPins = remember { mutableStateOf(true) }
+    val duplicateColors = remember { mutableStateOf(false) }
 
     val gameResults = remember { mutableStateOf(mutableListOf<GameResult>()) }
 
-    //End of game statistics
+    // End of game statistics
     val won = remember { mutableStateOf(false) }
     val neededTries = remember { mutableStateOf(0) }
 
@@ -87,8 +89,8 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins)
-            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins)
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors)
+            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors)
             GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
             GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount)
         }
@@ -103,7 +105,8 @@ fun beforeGame(
     columnCount: MutableState<Int>,
     colorAmount: MutableState<Int>,
     gameResults: MutableState<MutableList<GameResult>>,
-    generateInitialPins: MutableState<Boolean>
+    generateInitialPins: MutableState<Boolean>,
+    duplicateColors: MutableState<Boolean>
 ) {
     Row {
         Column {
@@ -114,7 +117,7 @@ fun beforeGame(
                 },
                 content = { Text("Start") }
             )
-            settings(columnCount, columnSize, colorAmount, generateInitialPins)
+            settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors)
         }
 
         // Game Results
@@ -213,14 +216,15 @@ fun setInitialPins(
     solution: MutableList<Pin>,
     columnSize: MutableState<Int>,
     colorAmount: MutableState<Int>,
-    generateInitialPins: MutableState<Boolean>
+    generateInitialPins: MutableState<Boolean>,
+    duplicateColors: MutableState<Boolean>
 ) {
     Text("Lösung setzen")
 
     solution.clear()
 
     if(generateInitialPins.value) {
-        generateInitialPins(columnSize, colorAmount, solution)
+        generateInitialPins(columnSize, colorAmount, solution, duplicateColors)
 
         gamePhase.value = GamePhases.PLAYING
     }
@@ -247,16 +251,24 @@ fun setInitialPins(
 }
 
 @Composable
-fun generateInitialPins(columnSize: MutableState<Int>, colorAmount: MutableState<Int>, solution: MutableList<Pin>) {
-    println("Generating inital pins")
-    val pinColorsShortend = PinColors.entries.subList(0, colorAmount.value).toMutableList()
+fun generateInitialPins(
+    columnSize: MutableState<Int>,
+    colorAmount: MutableState<Int>,
+    solution: MutableList<Pin>,
+    duplicateColors: MutableState<Boolean>
+) {
+    println("Generating initial pins")
+    val pinColorsShortened = PinColors.entries.subList(0, colorAmount.value).toMutableList()
     repeat(columnSize.value) {
-        val color = pinColorsShortend.random()
+        val color = pinColorsShortened.random()
 
-        if(colorAmount.value >= columnSize.value) {
-            pinColorsShortend.remove(color)
+        if(!duplicateColors.value) {
+            if(colorAmount.value >= columnSize.value) {
+                pinColorsShortened.remove(color)
+            }
+            else println("Need to use colors several times because !colorAmount.value >= columnSize.value")
         }
-        else println("Need to use colors several times because !colorAmount.value >= columnSize.value")
+        else println("did not remove because duplicateColors = ${duplicateColors.value}")
 
         solution.addLast(Pin(color.color))
         println("added $color to solution")
@@ -333,7 +345,8 @@ fun settings(
     columnCount: MutableState<Int>,
     columnSize: MutableState<Int>,
     colorAmount: MutableState<Int>,
-    generateInitialPins: MutableState<Boolean>
+    generateInitialPins: MutableState<Boolean>,
+    duplicateColors: MutableState<Boolean>
 ) {
     //Changeable Values
     val focusManager = LocalFocusManager.current
@@ -447,6 +460,19 @@ fun settings(
         )
         Text("Lösung generieren")
     }
+
+    // duplicate colors
+    Row {
+        Checkbox(
+            checked = duplicateColors.value,
+            onCheckedChange = {
+                duplicateColors.value = it
+                println("Changed duplicateColors value to ${duplicateColors.value}")
+            }
+        )
+        Text("Farben mehrfach verwenden")
+    }
+
 }
 
 fun main() = application {
