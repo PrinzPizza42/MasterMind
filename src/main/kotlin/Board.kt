@@ -59,7 +59,7 @@ object Board {
                     Row {
                         evaluationRow(perfectPins, rightColorPin, columnSize)
 
-                        row(column, columnSize, ready, colorAmount)
+                        row(column, columnSize, colorAmount)
 
                         if(currentColumn.value == columns.indexOf(column)) {
                             Button(
@@ -137,9 +137,8 @@ object Board {
     fun row(
         pins: List<Pin>,
         columnSize: MutableState<Int>,
-        ready: MutableState<Boolean>,
         colorAmount: MutableState<Int>
-        ) {
+    ) {
         Row(
             modifier = Modifier
                 .size((45 * columnSize.value).dp, 45.dp)
@@ -210,6 +209,28 @@ object Board {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    fun immutableRow(
+        pins: List<Pin>,
+        columnSize: MutableState<Int>
+    ) {
+        Row(
+            modifier = Modifier
+                .size((45 * columnSize.value).dp, 45.dp)
+                .background(Color.White)
+        ) {
+            for (pin in pins) {
+                Box(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .size(35.dp)
+                        .background(pin.color, CircleShape)
+                        .clip(CircleShape)
+                )
             }
         }
     }

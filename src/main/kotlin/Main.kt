@@ -1,7 +1,9 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.onClick
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.zIndex
 
 @Composable
 @Preview
@@ -234,7 +237,7 @@ fun setInitialPins(
             solution.add(Pin(Color.Black))
         }
 
-        Board.row(solution, columnSize, mutableStateOf(false), colorAmount)
+        Board.row(solution, columnSize, colorAmount)
 
         Button(
             onClick = {
@@ -290,6 +293,7 @@ fun playing(
     Board.rows(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount)
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun finished(
     gamePhase: MutableState<GamePhases>,
@@ -304,19 +308,40 @@ fun finished(
     generateInitialPins: MutableState<Boolean>,
     duplicateColors: MutableState<Boolean>
 ) {
-    Text("Ende")
+    Row {
+        Column(
+            Modifier.weight(1f)
+        ) {
+            Text("Ende")
 
-    if(won.value) Text("Du hast das Muster gefunden")
-    else Text("Du hast das Muster nicht rechtzeitig gefunden")
+            if(won.value) Text("Du hast das Muster gefunden")
+            else Text("Du hast das Muster nicht rechtzeitig gefunden")
 
-    Text("Gebrauchte Versuche: ${neededTries.value}")
+            Text("Gebrauchte Versuche: ${neededTries.value}")
 
-    Button(
-        onClick = {
-            gamePhase.value = GamePhases.BEFORE_GAME
-        },
-        content = { Text("Neustarten") }
-    )
+            Button(
+                onClick = {
+                    gamePhase.value = GamePhases.BEFORE_GAME
+                },
+                content = { Text("Neustarten") }
+            )
+        }
+
+        Column(
+            Modifier
+                .weight(1f)
+        ) {
+            Text("Lösung:")
+
+            Box(
+                Modifier
+                    .clickable(enabled = false) {}
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Board.immutableRow(solution, columnSize)
+            }
+        }
+    }
 
     val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value, colorAmount.value, generateInitialPins.value, duplicateColors.value)
     println("Result: $result")
