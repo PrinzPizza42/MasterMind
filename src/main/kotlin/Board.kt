@@ -24,7 +24,7 @@ import androidx.compose.ui.zIndex
 
 object Board {
     @Composable
-    fun columns(
+    fun rows(
         columns: SnapshotStateList<SnapshotStateList<Pin>>,
         columnSize: MutableState<Int>,
         currentColumn: MutableState<Int>,
@@ -34,9 +34,9 @@ object Board {
         neededTries: MutableState<Int>,
         colorAmount: MutableState<Int>
     ) {
-        Row (
+        Column (
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxHeight()
         ) {
             for (column in columns) {
                 val ready = remember { mutableStateOf(false) }
@@ -52,15 +52,14 @@ object Board {
                                 .background(Color.LightGray.copy(alpha = 0.5f))
                                 .clickable(enabled = false){}
                                 .zIndex(2f)
-                                .size(45.dp, ((45 * columnSize.value) + (30 * columnSize.value)).dp)
-                                .width(45.dp)
+                                .size(((45 * columnSize.value) + (30 * columnSize.value)).dp, 45.dp)
                         )
                     }
 
-                    Column {
-                        evaluationColumn(perfectPins, rightColorPin, columnSize)
+                    Row {
+                        evaluationRow(perfectPins, rightColorPin, columnSize)
 
-                        column(column, columnSize, ready, colorAmount)
+                        row(column, columnSize, ready, colorAmount)
 
                         if(currentColumn.value == columns.indexOf(column)) {
                             Button(
@@ -135,15 +134,15 @@ object Board {
     }
 
     @Composable
-    fun column(
+    fun row(
         pins: List<Pin>,
         columnSize: MutableState<Int>,
         ready: MutableState<Boolean>,
         colorAmount: MutableState<Int>
         ) {
-        Column(
+        Row(
             modifier = Modifier
-                .size(45.dp, (45 * columnSize.value).dp)
+                .size((45 * columnSize.value).dp, 45.dp)
                 .background(Color.White)
         ) {
             for (pin in pins) {
@@ -216,7 +215,7 @@ object Board {
     }
 
     @Composable
-    fun evaluationColumn(
+    fun evaluationRow(
         perfectPins: MutableState<Int>,
         rightColorPin: MutableState<Int>,
         columnSize: MutableState<Int>
@@ -236,9 +235,9 @@ object Board {
             }
         }
 
-        Column(
+        Row(
             modifier = Modifier
-                .size(45.dp, (30 * columnSize.value).dp)
+                .size((30 * columnSize.value).dp, 45.dp)
                 .background(Color.White)
         ) {
             for (color in colors) {

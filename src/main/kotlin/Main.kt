@@ -233,7 +233,7 @@ fun setInitialPins(
             solution.add(Pin(Color.Black))
         }
 
-        Board.column(solution, columnSize, mutableStateOf(false), colorAmount)
+        Board.row(solution, columnSize, mutableStateOf(false), colorAmount)
 
         Button(
             onClick = {
@@ -290,7 +290,7 @@ fun playing(
 
     val currentColumn = remember { mutableStateOf(0) }
 
-    Board.columns(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount)
+    Board.rows(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount)
 }
 
 @Composable
