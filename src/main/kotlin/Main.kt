@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalFocusManager
@@ -92,7 +91,7 @@ fun App() {
             GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors)
             GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors)
             GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
-            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount)
+            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors)
         }
     }
 }
@@ -145,7 +144,7 @@ fun beforeGame(
                     content = {
                         Text("Reset")
                     },
-                    enabled = gameResults.value.size > 0
+                    enabled = gameResults.value.isNotEmpty()
                 )
             }
 
@@ -159,7 +158,7 @@ fun beforeGame(
                         cursorPosition.value = position
                     }
             ) {
-                if(gameResults.value.size > 0) {
+                if(gameResults.value.isNotEmpty()) {
                     for(result in gameResults.value) {
                         var showPopup by remember { mutableStateOf(false) }
                         val wonString = if(result.won) "gewonnen" else "verloren"
@@ -199,6 +198,8 @@ fun beforeGame(
                                     Text("  Reihengröße: ${result.columnSize}")
                                     Text("  Reihenmenge: ${result.columnCount}")
                                     Text("  Farbenmenge: ${result.colorAmount}")
+                                    Text("  Lösung generiert: ${result.generateInitialPins}")
+                                    Text("  Farben mehrfach verwendbar: ${result.duplicateColors}")
                                 }
                             }
                         }
@@ -238,10 +239,6 @@ fun setInitialPins(
         Button(
             onClick = {
                 if(!solution.none { it.color == Color.Black }) return@Button
-
-                solution.forEach { pin ->
-                    println(pin.color.toArgb())
-                }
 
                 gamePhase.value = GamePhases.PLAYING
             },
@@ -303,7 +300,9 @@ fun finished(
     columnCount: MutableState<Int>,
     columnSize: MutableState<Int>,
     gameResults: MutableState<MutableList<GameResult>>,
-    colorAmount: MutableState<Int>
+    colorAmount: MutableState<Int>,
+    generateInitialPins: MutableState<Boolean>,
+    duplicateColors: MutableState<Boolean>
 ) {
     Text("Ende")
 
@@ -319,7 +318,7 @@ fun finished(
         content = { Text("Neustarten") }
     )
 
-    val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value, colorAmount.value)
+    val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value, colorAmount.value, generateInitialPins.value, duplicateColors.value)
     println("Result: $result")
     gameResults.value.addLast(result)
 

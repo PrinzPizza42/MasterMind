@@ -3,7 +3,9 @@ data class GameResult(
     val tries: Int,
     val columnSize: Int,
     val columnCount: Int,
-    val colorAmount: Int
+    val colorAmount: Int,
+    val generateInitialPins: Boolean,
+    val duplicateColors: Boolean
 ) {
     //val player: Player
 }
