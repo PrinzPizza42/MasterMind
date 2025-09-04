@@ -32,7 +32,8 @@ object Board {
         solution: MutableList<Pin>,
         won: MutableState<Boolean>,
         neededTries: MutableState<Int>,
-        colorAmount: MutableState<Int>
+        colorAmount: MutableState<Int>,
+        pinSize: MutableState<Float>
     ) {
         Column (
             modifier = Modifier
@@ -52,14 +53,14 @@ object Board {
                                 .background(Color.LightGray.copy(alpha = 0.5f))
                                 .clickable(enabled = false){}
                                 .zIndex(2f)
-                                .size(((45 * columnSize.value) + (30 * columnSize.value)).dp, 45.dp)
+                                .size((((45 * columnSize.value) + (30 * columnSize.value)) * pinSize.value).dp, (45 * pinSize.value).dp)
                         )
                     }
 
                     Row {
-                        evaluationRow(perfectPins, rightColorPin, columnSize)
+                        evaluationRow(perfectPins, rightColorPin, columnSize, pinSize)
 
-                        row(column, columnSize, colorAmount)
+                        row(column, columnSize, colorAmount, pinSize)
 
                         if(currentColumn.value == columns.indexOf(column)) {
                             Button(
@@ -137,11 +138,12 @@ object Board {
     fun row(
         pins: List<Pin>,
         columnSize: MutableState<Int>,
-        colorAmount: MutableState<Int>
+        colorAmount: MutableState<Int>,
+        pinSize: MutableState<Float>
     ) {
         Row(
             modifier = Modifier
-                .size((45 * columnSize.value).dp, 45.dp)
+                .size(((45 * columnSize.value) * pinSize.value).dp, (45 * pinSize.value).dp)
                 .background(Color.White)
         ) {
             for (pin in pins) {
@@ -150,8 +152,8 @@ object Board {
 
                 Box(
                     modifier = Modifier
-                        .padding(5.dp)
-                        .size(35.dp)
+                        .padding((5 * pinSize.value).dp)
+                        .size((35 * pinSize.value).dp)
                         .background(pin.color, CircleShape)
                         .clip(CircleShape)
                         .clickable{ showPopup = true }
@@ -164,11 +166,11 @@ object Board {
                     ) {
                         Column(
                             modifier = Modifier
-                                .background(Color.White, shape = RoundedCornerShape(8.dp))
-                                .padding(16.dp)
+                                .background(Color.White, shape = RoundedCornerShape((8 * pinSize.value).dp))
+                                .padding((16 * pinSize.value).dp)
                         ) {
                             Text("Wähle eine Farbe:")
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height((8 * pinSize.value).dp))
                             Row {
                                 for(color in PinColors.entries) {
                                     if(PinColors.entries.indexOf(color) >= colorAmount.value) continue
@@ -176,8 +178,8 @@ object Board {
                                     val colorPickerPin = Pin(color.color)
 
                                     Box (Modifier
-                                        .padding(5.dp)
-                                        .size(35.dp)
+                                        .padding((5 * pinSize.value).dp)
+                                        .size((35 * pinSize.value).dp)
                                         .background(colorPickerPin.initialColor, CircleShape)
                                         .clip(CircleShape)
                                         .clickable {
@@ -189,15 +191,15 @@ object Board {
 
                                 Box(
                                     modifier = Modifier
-                                        .padding(5.dp)
-                                        .background(Color.Gray, RoundedCornerShape(15.dp))
-                                        .size(3.dp, 35.dp)
+                                        .padding((5 * pinSize.value).dp)
+                                        .background(Color.Gray, RoundedCornerShape((15 * pinSize.value).dp))
+                                        .size((3 * pinSize.value).dp, (35 * pinSize.value).dp)
                                 )
 
                                 val colorPickerPin = Pin(Color.Black)
                                 Box (Modifier
-                                    .padding(5.dp)
-                                    .size(35.dp)
+                                    .padding((5 * pinSize.value).dp)
+                                    .size((35 * pinSize.value).dp)
                                     .background(colorPickerPin.initialColor, CircleShape)
                                     .clip(CircleShape)
                                     .clickable {
@@ -216,18 +218,19 @@ object Board {
     @Composable
     fun immutableRow(
         pins: List<Pin>,
-        columnSize: MutableState<Int>
+        columnSize: MutableState<Int>,
+        pinSize: MutableState<Float>
     ) {
         Row(
             modifier = Modifier
-                .size((45 * columnSize.value).dp, 45.dp)
+                .size(((45 * columnSize.value) * pinSize.value).dp, (45 * pinSize.value).dp)
                 .background(Color.White)
         ) {
             for (pin in pins) {
                 Box(
                     modifier = Modifier
-                        .padding(5.dp)
-                        .size(35.dp)
+                        .padding((5 * pinSize.value).dp)
+                        .size((35 * pinSize.value).dp)
                         .background(pin.color, CircleShape)
                         .clip(CircleShape)
                 )
@@ -239,7 +242,8 @@ object Board {
     fun evaluationRow(
         perfectPins: MutableState<Int>,
         rightColorPin: MutableState<Int>,
-        columnSize: MutableState<Int>
+        columnSize: MutableState<Int>,
+        pinSize: MutableState<Float>
     ) {
         val colors = remember { mutableStateListOf<Color>() }
 
@@ -258,14 +262,14 @@ object Board {
 
         Row(
             modifier = Modifier
-                .size((30 * columnSize.value).dp, 45.dp)
+                .size(((30 * columnSize.value) * pinSize.value).dp, (45 * pinSize.value).dp)
                 .background(Color.White)
         ) {
             for (color in colors) {
                 Box(
                     modifier = Modifier
-                        .padding(5.dp)
-                        .size(20.dp)
+                        .padding((5 * pinSize.value).dp)
+                        .size((20 * pinSize.value).dp)
                         .background(color, CircleShape)
                         .clip(CircleShape)
                 )

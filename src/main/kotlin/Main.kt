@@ -3,12 +3,12 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.onClick
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
+import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import androidx.compose.ui.zIndex
+import kotlin.math.round
 
 @Composable
 @Preview
@@ -42,6 +42,7 @@ fun App() {
     val colorAmount = remember { mutableStateOf(8) }
     val generateInitialPins = remember { mutableStateOf(true) }
     val duplicateColors = remember { mutableStateOf(false) }
+    val pinSize = remember { mutableStateOf(1f) }
 
     val gameResults = remember { mutableStateOf(mutableListOf<GameResult>()) }
 
@@ -91,10 +92,10 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors)
-            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors)
-            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount)
-            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors)
+            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors, pinSize)
+            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
+            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount, pinSize)
+            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors, pinSize)
         }
     }
 }
@@ -108,7 +109,8 @@ fun beforeGame(
     colorAmount: MutableState<Int>,
     gameResults: MutableState<MutableList<GameResult>>,
     generateInitialPins: MutableState<Boolean>,
-    duplicateColors: MutableState<Boolean>
+    duplicateColors: MutableState<Boolean>,
+    pinSize: MutableState<Float>
 ) {
     Row {
         Column {
@@ -119,7 +121,7 @@ fun beforeGame(
                 },
                 content = { Text("Start") }
             )
-            settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors)
+            settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
         }
 
         // Game Results
@@ -221,7 +223,8 @@ fun setInitialPins(
     columnSize: MutableState<Int>,
     colorAmount: MutableState<Int>,
     generateInitialPins: MutableState<Boolean>,
-    duplicateColors: MutableState<Boolean>
+    duplicateColors: MutableState<Boolean>,
+    pinSize: MutableState<Float>
 ) {
     Text("Lösung setzen")
 
@@ -237,7 +240,8 @@ fun setInitialPins(
             solution.add(Pin(Color.Black))
         }
 
-        Board.row(solution, columnSize, colorAmount)
+        pinSizeSlider(pinSize)
+        Board.row(solution, columnSize, colorAmount, pinSize)
 
         Button(
             onClick = {
@@ -285,12 +289,15 @@ fun playing(
     won: MutableState<Boolean>,
     neededTries: MutableState<Int>,
     colorAmount: MutableState<Int>,
+    pinSize: MutableState<Float>,
 ) {
     Text("Lösen")
 
     val currentColumn = remember { mutableStateOf(0) }
 
-    Board.rows(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount)
+
+    pinSizeSlider(pinSize)
+    Board.rows(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount, pinSize)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -306,7 +313,8 @@ fun finished(
     gameResults: MutableState<MutableList<GameResult>>,
     colorAmount: MutableState<Int>,
     generateInitialPins: MutableState<Boolean>,
-    duplicateColors: MutableState<Boolean>
+    duplicateColors: MutableState<Boolean>,
+    pinSize: MutableState<Float>
 ) {
     Row {
         Column(
@@ -338,7 +346,7 @@ fun finished(
                     .clickable(enabled = false) {}
                     .align(Alignment.CenterHorizontally)
             ) {
-                Board.immutableRow(solution, columnSize)
+                Board.immutableRow(solution, columnSize, pinSize)
             }
         }
     }
@@ -370,12 +378,13 @@ fun settings(
     columnSize: MutableState<Int>,
     colorAmount: MutableState<Int>,
     generateInitialPins: MutableState<Boolean>,
-    duplicateColors: MutableState<Boolean>
+    duplicateColors: MutableState<Boolean>,
+    pinSize: MutableState<Float>
 ) {
-    //Changeable Values
+    // changeable Values
     val focusManager = LocalFocusManager.current
 
-    //column amount
+    // column amount
     var columnAmountValue by remember { mutableStateOf(columnCount.value.toString()) }
     TextField(
         value = columnAmountValue,
@@ -407,7 +416,7 @@ fun settings(
         isError = columnAmountValue.toIntOrNull() == null
     )
 
-    //column size
+    // column size
     var columnSizeValue by remember { mutableStateOf(columnSize.value.toString()) }
     TextField(
         value = columnSizeValue,
@@ -440,7 +449,7 @@ fun settings(
         isError = columnSizeValue.toIntOrNull() == null
     )
 
-    //color amount
+    // color amount
     var colorAmountValue by remember { mutableStateOf(colorAmount.value.toString()) }
     TextField(
         value = colorAmountValue,
@@ -497,6 +506,21 @@ fun settings(
         Text("Farben mehrfach verwenden")
     }
 
+    // pin Size
+    pinSizeSlider(pinSize)
+}
+
+@Composable
+fun pinSizeSlider(pinSize: MutableState<Float>) {
+    Row {
+        Text("Pin Größe (${round(pinSize.value * 10) / 10.0f})")
+        Slider(
+            value = pinSize.value,
+            onValueChange = {pinSize.value = it},
+            valueRange = 0.5f..2f,
+            modifier = Modifier.width(300.dp)
+        )
+    }
 }
 
 fun main() = application {
