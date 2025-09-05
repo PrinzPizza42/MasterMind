@@ -384,103 +384,14 @@ fun settings(
     // changeable Values
     val focusManager = LocalFocusManager.current
 
-    // column amount
-    var columnAmountValue by remember { mutableStateOf(columnCount.value.toString()) }
-    TextField(
-        value = columnAmountValue,
-        onValueChange = { text ->
-            columnAmountValue = text
-        },
-        modifier = Modifier.onPreviewKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown) {
-                if(columnAmountValue.toIntOrNull() == null) return@onPreviewKeyEvent true
+    // row amount
+    textFieldInt(columnCount, "Reihenanzahl")
 
-                when (event.key) {
-                    Key.Enter -> {
-                        columnCount.value = columnAmountValue.toInt()
-
-                        focusManager.clearFocus()
-                        true
-                    }
-                    Key.Escape -> {
-                        focusManager.clearFocus()
-                        true
-                    }
-                    else -> false
-                }
-            } else {
-                false
-            }
-        },
-        label = { Text("Anzahl der Reihen") },
-        isError = columnAmountValue.toIntOrNull() == null
-    )
-
-    // column size
-    var columnSizeValue by remember { mutableStateOf(columnSize.value.toString()) }
-    TextField(
-        value = columnSizeValue,
-        onValueChange = { text ->
-            columnSizeValue = text
-        },
-        modifier = Modifier.onPreviewKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown) {
-                if(columnSizeValue.toIntOrNull() == null) return@onPreviewKeyEvent true
-
-                when (event.key) {
-                    Key.Enter -> {
-                        columnSize.value = columnSizeValue.toInt()
-                        println("Set column size: ${columnSize.value}")
-
-                        focusManager.clearFocus()
-                        true
-                    }
-                    Key.Escape -> {
-                        focusManager.clearFocus()
-                        true
-                    }
-                    else -> false
-                }
-            } else {
-                false
-            }
-        },
-        label = { Text("Größe der Reihen") },
-        isError = columnSizeValue.toIntOrNull() == null
-    )
+    // row size
+    textFieldInt(columnSize, "Reihengröße")
 
     // color amount
-    var colorAmountValue by remember { mutableStateOf(colorAmount.value.toString()) }
-    TextField(
-        value = colorAmountValue,
-        onValueChange = { text ->
-            colorAmountValue = text
-        },
-        modifier = Modifier.onPreviewKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown) {
-                if(colorAmountValue.toIntOrNull() == null) return@onPreviewKeyEvent true
-
-                when (event.key) {
-                    Key.Enter -> {
-                        colorAmount.value = colorAmountValue.toInt()
-                        println("Set color amount: ${colorAmount.value}")
-
-                        focusManager.clearFocus()
-                        true
-                    }
-                    Key.Escape -> {
-                        focusManager.clearFocus()
-                        true
-                    }
-                    else -> false
-                }
-            } else {
-                false
-            }
-        },
-        label = { Text("Menge der auswählbaren Farben (maximal ${PinColors.entries.size})") },
-        isError = colorAmountValue.toIntOrNull() == null
-    )
+    textFieldInt(colorAmount, "Farbenmenge (max ${PinColors.entries.size})")
 
     // generate initial pins
     Row {
@@ -508,6 +419,43 @@ fun settings(
 
     // pin Size
     pinSizeSlider(pinSize)
+}
+
+@Composable
+fun textFieldInt(value: MutableState<Int>, label: String) {
+    val focusManager = LocalFocusManager.current
+
+    var columnAmountValue by remember { mutableStateOf(value.value.toString()) }
+    TextField(
+        value = columnAmountValue,
+        onValueChange = { text ->
+            columnAmountValue = text
+        },
+        modifier = Modifier.onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown) {
+                if(columnAmountValue.toIntOrNull() == null) return@onPreviewKeyEvent false
+
+                when (event.key) {
+                    Key.Enter -> {
+                        value.value = columnAmountValue.toInt()
+
+                        focusManager.clearFocus()
+                        true
+                    }
+                    Key.Escape -> {
+                        focusManager.clearFocus()
+                        true
+                    }
+                    else -> false
+                }
+            } else {
+                false
+            }
+        },
+        label = { Text(label) },
+        isError = columnAmountValue.toIntOrNull() == null,
+        singleLine = true
+    )
 }
 
 @Composable
