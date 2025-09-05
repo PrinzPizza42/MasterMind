@@ -31,6 +31,16 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "MasterMind"
             packageVersion = "1.0.0"
+
+            windows {
+                iconFile.set(project.file("src/main/composeResources/drawable/icon.ico"))
+                menuGroup = "DnD-Charakter-Manager"
+                shortcut = true
+            }
+
+            linux {
+                iconFile.set(project.file("src/main/composeResources/drawable/icon.png"))
+            }
         }
     }
 }

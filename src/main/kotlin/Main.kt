@@ -1,16 +1,8 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Slider
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -23,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -32,7 +25,7 @@ import kotlin.math.round
 
 @Composable
 @Preview
-fun App() {
+fun App(windowTitle: MutableState<String>) {
     // Settings
     val columnSize = remember { mutableStateOf(4) }
     val columnCount = remember { mutableStateOf(8) }
@@ -92,10 +85,22 @@ fun App() {
 
     Column {
         when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors, pinSize)
-            GamePhases.SET_INITIAL_PINS -> setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
-            GamePhases.PLAYING -> playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount, pinSize)
-            GamePhases.FINISHED -> finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors, pinSize)
+            GamePhases.BEFORE_GAME -> {
+                beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors, pinSize)
+                windowTitle.value = "Vor dem Spiel"
+            }
+            GamePhases.SET_INITIAL_PINS -> {
+                setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
+                windowTitle.value = "Lösung setzen"
+            }
+            GamePhases.PLAYING -> {
+                playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount, pinSize)
+                windowTitle.value = "Spielend"
+            }
+            GamePhases.FINISHED -> {
+                finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors, pinSize)
+                windowTitle.value = if(won.value) "Gewonnen" else "Verloren"
+            }
         }
     }
 }
@@ -472,7 +477,15 @@ fun pinSizeSlider(pinSize: MutableState<Float>) {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
+    val icon = painterResource("icon.png")
+
+    val windowTitle = remember { mutableStateOf("MasterMind") }
+
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = windowTitle.value,
+        icon = icon
+    ) {
+        App(windowTitle)
     }
 }
