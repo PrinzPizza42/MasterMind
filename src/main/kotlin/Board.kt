@@ -40,9 +40,7 @@ object Board {
                 .fillMaxHeight()
         ) {
             for (column in columns) {
-                val ready = remember { mutableStateOf(false) }
-
-                //Evaluation
+                //Evaluation Data
                 val perfectPins = remember { mutableStateOf(0) } //right position and color
                 val rightColorPin = remember { mutableStateOf(0) } // only right color
 
@@ -50,7 +48,6 @@ object Board {
                     if(currentColumn.value != columns.indexOf(column)) {
                         Box(
                             Modifier
-                                .background(Color.LightGray.copy(alpha = 0.5f))
                                 .clickable(enabled = false){}
                                 .zIndex(2f)
                                 .size((((45 * columnSize.value) + (30 * columnSize.value)) * pinSize.value).dp, (45 * pinSize.value).dp)
@@ -144,7 +141,7 @@ object Board {
         Row(
             modifier = Modifier
                 .size(((45 * columnSize.value) * pinSize.value).dp, (45 * pinSize.value).dp)
-                .background(Color.White)
+                .background(Color.Transparent)
         ) {
             for (pin in pins) {
                 var showPopup by remember { mutableStateOf(false) }
@@ -224,7 +221,7 @@ object Board {
         Row(
             modifier = Modifier
                 .size(((45 * columnSize.value) * pinSize.value).dp, (45 * pinSize.value).dp)
-                .background(Color.White)
+                .background(Color.Transparent)
         ) {
             for (pin in pins) {
                 Box(
@@ -263,7 +260,7 @@ object Board {
         Row(
             modifier = Modifier
                 .size(((30 * columnSize.value) * pinSize.value).dp, (45 * pinSize.value).dp)
-                .background(Color.White)
+                .background(Color.Transparent)
         ) {
             for (color in colors) {
                 Box(

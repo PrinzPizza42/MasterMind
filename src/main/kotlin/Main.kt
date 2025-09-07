@@ -16,6 +16,8 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -42,14 +44,6 @@ fun App(windowTitle: MutableState<String>) {
     // End of game statistics
     val won = remember { mutableStateOf(false) }
     val neededTries = remember { mutableStateOf(0) }
-
-//    LaunchedEffect(Unit) {
-//        val newGameResults = mutableListOf<GameResult>()
-//        repeat(10) {
-//            newGameResults.addLast(GameResult(Random.nextBoolean(), Random.nextInt(10), Random.nextInt(10), Random.nextInt(10), Random.nextInt(8)))
-//        }
-//        gameResults.value = newGameResults
-//    }
 
     // initial filling of list
     LaunchedEffect(Unit) {
@@ -83,7 +77,12 @@ fun App(windowTitle: MutableState<String>) {
         }
     }
 
-    Column {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(DefaultColors.BACKGROUND.color),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         when (gamePhase.value) {
             GamePhases.BEFORE_GAME -> {
                 beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors, pinSize)
@@ -117,107 +116,156 @@ fun beforeGame(
     duplicateColors: MutableState<Boolean>,
     pinSize: MutableState<Float>
 ) {
-    Row {
-        Column {
-            Text("Voreinstellungen")
-            Button(
-                onClick = {
-                    gamePhase.value = GamePhases.SET_INITIAL_PINS
-                },
-                content = { Text("Start") }
-            )
-            settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
-        }
-
-        // Game Results
-        Column(
-            Modifier
-                .background(Color.LightGray)
-        ) {
-            val shape = remember { RoundedCornerShape(5.dp) }
-            Row(Modifier.align(Alignment.CenterHorizontally)) {
-                Box(
-                    Modifier
-                        .padding(0.dp, 0.dp, 0.dp, 15.dp)
-                        .shadow(5.dp, shape)
-                        .background(Color.LightGray, shape)
-                        .clip(shape)
-                ) {
-                    Text("Spiele in dieser Session (${gameResults.value.size}):", Modifier.padding(5.dp))
-                }
-                Button(
-                    modifier = Modifier,
-                    onClick = {
-                        gameResults.value = mutableListOf()
-                        println("Reset game results: $gameResults")
-                    },
-                    content = {
-                        Text("Reset")
-                    },
-                    enabled = gameResults.value.isNotEmpty()
-                )
-            }
-
-            val cursorPosition = remember { mutableStateOf(Offset.Zero) }
-
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row {
             Column(
                 Modifier
-                    .verticalScroll(rememberScrollState())
-                    .onPointerEvent(PointerEventType.Move) {
-                        val position = it.changes.first().position
-                        cursorPosition.value = position
-                    }
+                    .padding(10.dp)
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp))
             ) {
-                if(gameResults.value.isNotEmpty()) {
-                    for(result in gameResults.value) {
-                        var showPopup by remember { mutableStateOf(false) }
-                        val wonString = if(result.won) "gewonnen" else "verloren"
-                        val index = gameResults.value.indexOf(result)
+                Text("Spieleinstellungen",
+                    color = DefaultColors.TEXT.color,
+                    modifier = Modifier
+                        .shadow(5.dp)
+                        .width(410.dp)
+                        .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                        .padding(5.dp)
+                )
 
-                        Column(
-                            Modifier
-                                .shadow(5.dp, shape)
-                                .padding(0.dp, 7.dp)
-                                .width(200.dp)
-                                .background(Color.White, shape)
-                                .clip(shape)
-                                .align(Alignment.CenterHorizontally)
-                                .clickable {
-                                    showPopup = true
-                                }
-                        ) {
-                            Text("Spiel ${index + 1}", Modifier.padding(5.dp))
-                            // name of both players
-                            Text("Spieler hat nach ${result.tries} Versuchen $wonString")
+                settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
+            }
+
+            // Game Results
+            Column(
+                Modifier
+                    .padding(10.dp)
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val shape = remember { RoundedCornerShape(5.dp) }
+                Row(
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .shadow(5.dp, shape)
+                        .background(DefaultColors.SECONDARY.color, shape)
+                        .height(40.dp)
+                        .padding(5.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .clip(shape)
+                    ) {
+                        Text(text = "Spiele in dieser Session (${gameResults.value.size}):"
+                            , modifier = Modifier.padding(5.dp),
+                            color = DefaultColors.TEXT.color
+                        )
+                    }
+                    Button(
+                        modifier = Modifier
+                            .height(30.dp)
+                        ,
+                        onClick = {
+                            gameResults.value = mutableListOf()
+                            println("Reset game results: $gameResults")
+                        },
+                        content = {
+                            Text("Reset",
+                                color = DefaultColors.TEXT.color
+                            )
+                        },
+                        enabled = gameResults.value.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = DefaultColors.HIGHLIGHT.color,
+                            contentColor = DefaultColors.TEXT.color,
+                            disabledBackgroundColor = DefaultColors.PRIMARY.color,
+                            disabledContentColor = DefaultColors.SECONDARY.color
+                        )
+                    )
+                }
+
+                val cursorPosition = remember { mutableStateOf(Offset.Zero) }
+
+                Column(
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .onPointerEvent(PointerEventType.Move) {
+                            val position = it.changes.first().position
+                            cursorPosition.value = position
                         }
+                ) {
+                    if(gameResults.value.isNotEmpty()) {
+                        for(result in gameResults.value) {
+                            var showPopup by remember { mutableStateOf(false) }
+                            val wonString = if(result.won) "gewonnen" else "verloren"
+                            val index = gameResults.value.indexOf(result)
 
-                        if(showPopup) {
-                            Popup(
-                                offset = IntOffset.Zero.copy(x = 210, y = cursorPosition.value.y.toInt()),
-                                onDismissRequest = { showPopup = false }
+                            Column(
+                                Modifier
+                                    .padding(0.dp, 7.dp)
+                                    .shadow(5.dp, shape)
+                                    .width(230.dp)
+                                    .background(DefaultColors.SECONDARY.color, shape)
+                                    .clip(shape)
+                                    .align(Alignment.CenterHorizontally)
+                                    .clickable {
+                                        showPopup = true
+                                    }
+                                    .padding(5.dp)
                             ) {
-                                Column(
-                                    Modifier
-                                        .background(Color.White, RoundedCornerShape(5.dp))
+                                Text("Spiel ${index + 1}", color = DefaultColors.TEXT.color)
+                                // name of both players
+                                Text("Spieler hat nach ${result.tries} ${if(result.tries >= 2) "Versuchen" else "Versuch"} $wonString",
+                                    color = DefaultColors.TEXT.color
+                                )
+                            }
+
+                            if(showPopup) {
+                                Popup(
+                                    offset = IntOffset.Zero.copy(x = 210, y = cursorPosition.value.y.toInt()),
+                                    onDismissRequest = { showPopup = false }
                                 ) {
-                                    Text("Spiel: ${gameResults.value.indexOf(result) + 1}")
-//                                    Text("Spieler: ${result.player}")
-                                    Text("Versuche: ${result.tries}")
-                                    Text("Ergebnis: $wonString")
-                                    Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp))
-                                    Text("  Reihengröße: ${result.columnSize}")
-                                    Text("  Reihenmenge: ${result.columnCount}")
-                                    Text("  Farbenmenge: ${result.colorAmount}")
-                                    Text("  Lösung generiert: ${result.generateInitialPins}")
-                                    Text("  Farben mehrfach verwendbar: ${result.duplicateColors}")
+                                    Column(
+                                        Modifier
+                                            .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                                            .padding(5.dp)
+                                    ) {
+                                        Text("Spiel: ${gameResults.value.indexOf(result) + 1}", color = DefaultColors.TEXT.color)
+//                                    Text("Spieler: ${result.player}", color = DefaultColors.TEXT.color)
+                                        Text("Versuche: ${result.tries}", color = DefaultColors.TEXT.color)
+                                        Text("Ergebnis: $wonString", color = DefaultColors.TEXT.color)
+                                        Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp), color = DefaultColors.TEXT.color)
+                                        Text("  Reihengröße: ${result.columnSize}", color = DefaultColors.TEXT.color)
+                                        Text("  Reihenmenge: ${result.columnCount}", color = DefaultColors.TEXT.color)
+                                        Text("  Farbenmenge: ${result.colorAmount}", color = DefaultColors.TEXT.color)
+                                        Text("  Lösung generiert: ${result.generateInitialPins}", color = DefaultColors.TEXT.color)
+                                        Text("  Farben mehrfach verwendbar: ${result.duplicateColors}", color = DefaultColors.TEXT.color)
+                                    }
                                 }
                             }
                         }
                     }
+                    else Text("Noch keine Spiele gespielt", color = DefaultColors.TEXT.color)
                 }
-                else Text("Noch keine Spiele gespielt")
             }
         }
+
+        Button(
+            onClick = {
+                gamePhase.value = GamePhases.SET_INITIAL_PINS
+            },
+            content = { Text("Start", color = DefaultColors.TEXT.color) },
+            modifier = Modifier
+                .padding(40.dp)
+                .size(200.dp, 100.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = DefaultColors.HIGHLIGHT.color,
+                contentColor = DefaultColors.TEXT.color
+            )
+        )
     }
 }
 
@@ -231,7 +279,7 @@ fun setInitialPins(
     duplicateColors: MutableState<Boolean>,
     pinSize: MutableState<Float>
 ) {
-    Text("Lösung setzen")
+    Text("Lösung setzen", color = DefaultColors.TEXT.color)
 
     solution.clear()
 
@@ -254,7 +302,7 @@ fun setInitialPins(
 
                 gamePhase.value = GamePhases.PLAYING
             },
-            content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt") }
+            content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt", color = DefaultColors.TEXT.color) }
         )
     }
 }
@@ -294,9 +342,9 @@ fun playing(
     won: MutableState<Boolean>,
     neededTries: MutableState<Int>,
     colorAmount: MutableState<Int>,
-    pinSize: MutableState<Float>,
+    pinSize: MutableState<Float>
 ) {
-    Text("Lösen")
+    Text("Lösen", color = DefaultColors.TEXT.color)
 
     val currentColumn = remember { mutableStateOf(0) }
 
@@ -325,18 +373,18 @@ fun finished(
         Column(
             Modifier.weight(1f)
         ) {
-            Text("Ende")
+            Text("Ende", color = DefaultColors.TEXT.color)
 
-            if(won.value) Text("Du hast das Muster gefunden")
-            else Text("Du hast das Muster nicht rechtzeitig gefunden")
+            if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT.color)
+            else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT.color)
 
-            Text("Gebrauchte Versuche: ${neededTries.value}")
+            Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT.color)
 
             Button(
                 onClick = {
                     gamePhase.value = GamePhases.BEFORE_GAME
                 },
-                content = { Text("Neustarten") }
+                content = { Text("Neustarten", color = DefaultColors.TEXT.color) }
             )
         }
 
@@ -344,7 +392,7 @@ fun finished(
             Modifier
                 .weight(1f)
         ) {
-            Text("Lösung:")
+            Text("Lösung:", color = DefaultColors.TEXT.color)
 
             Box(
                 Modifier
@@ -386,44 +434,60 @@ fun settings(
     duplicateColors: MutableState<Boolean>,
     pinSize: MutableState<Float>
 ) {
-    // changeable Values
-    val focusManager = LocalFocusManager.current
+    Column(
+        Modifier.padding(5.dp)
+    ) {
 
-    // row amount
-    textFieldInt(columnCount, "Reihenanzahl")
+        // row amount
+        textFieldInt(columnCount, "Reihenanzahl")
 
-    // row size
-    textFieldInt(columnSize, "Reihengröße")
+        // row size
+        textFieldInt(columnSize, "Reihengröße")
 
-    // color amount
-    textFieldInt(colorAmount, "Farbenmenge (max ${PinColors.entries.size})")
+        // color amount
+        textFieldInt(colorAmount, "Farbenmenge (max ${PinColors.entries.size})")
 
-    // generate initial pins
-    Row {
-        Checkbox(
-            checked = generateInitialPins.value,
-            onCheckedChange = {
-                generateInitialPins.value = it
-                println("Changed generateInitialPins value to ${generateInitialPins.value}")
-            }
-        )
-        Text("Lösung generieren")
+        // generate initial pins
+        Row {
+            Checkbox(
+                checked = generateInitialPins.value,
+                onCheckedChange = {
+                    generateInitialPins.value = it
+                    println("Changed generateInitialPins value to ${generateInitialPins.value}")
+                },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = DefaultColors.HIGHLIGHT.color,
+                    uncheckedColor = DefaultColors.SECONDARY.color,
+                    checkmarkColor = DefaultColors.TEXT.color,
+                    disabledColor = DefaultColors.PRIMARY.color,
+                    disabledIndeterminateColor = DefaultColors.SECONDARY.color
+                )
+            )
+            Text("Lösung generieren", color = DefaultColors.TEXT.color)
+        }
+
+        // duplicate colors
+        Row {
+            Checkbox(
+                checked = duplicateColors.value,
+                onCheckedChange = {
+                    duplicateColors.value = it
+                    println("Changed duplicateColors value to ${duplicateColors.value}")
+                },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = DefaultColors.HIGHLIGHT.color,
+                    uncheckedColor = DefaultColors.SECONDARY.color,
+                    checkmarkColor = DefaultColors.TEXT.color,
+                    disabledColor = DefaultColors.PRIMARY.color,
+                    disabledIndeterminateColor = DefaultColors.SECONDARY.color
+                )
+            )
+            Text("Farben mehrfach verwenden", color = DefaultColors.TEXT.color)
+        }
+
+        // pin Size
+        pinSizeSlider(pinSize)
     }
-
-    // duplicate colors
-    Row {
-        Checkbox(
-            checked = duplicateColors.value,
-            onCheckedChange = {
-                duplicateColors.value = it
-                println("Changed duplicateColors value to ${duplicateColors.value}")
-            }
-        )
-        Text("Farben mehrfach verwenden")
-    }
-
-    // pin Size
-    pinSizeSlider(pinSize)
 }
 
 @Composable
@@ -431,7 +495,8 @@ fun textFieldInt(value: MutableState<Int>, label: String) {
     val focusManager = LocalFocusManager.current
 
     var columnAmountValue by remember { mutableStateOf(value.value.toString()) }
-    TextField(
+
+    OutlinedTextField(
         value = columnAmountValue,
         onValueChange = { text ->
             columnAmountValue = text
@@ -457,21 +522,36 @@ fun textFieldInt(value: MutableState<Int>, label: String) {
                 false
             }
         },
-        label = { Text(label) },
+        label = { Text(label, color = DefaultColors.TEXT.color) },
         isError = columnAmountValue.toIntOrNull() == null,
-        singleLine = true
+        singleLine = true,
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            textColor = DefaultColors.TEXT.color,
+            cursorColor = DefaultColors.TEXT.color,
+
+            focusedBorderColor = DefaultColors.TEXT.color,
+            unfocusedBorderColor = DefaultColors.SECONDARY.color,
+
+            focusedLabelColor = DefaultColors.TEXT.color,
+            unfocusedLabelColor = DefaultColors.SECONDARY.color
+        )
     )
 }
 
 @Composable
 fun pinSizeSlider(pinSize: MutableState<Float>) {
     Row {
-        Text("Pin Größe (${round(pinSize.value * 10) / 10.0f})")
+        Text("Pin Größe (${round(pinSize.value * 10) / 10.0f})", color = DefaultColors.TEXT.color)
         Slider(
             value = pinSize.value,
             onValueChange = {pinSize.value = it},
             valueRange = 0.5f..2f,
-            modifier = Modifier.width(300.dp)
+            modifier = Modifier.width(300.dp),
+            colors = SliderDefaults.colors(
+                thumbColor = DefaultColors.HIGHLIGHT.color,
+                activeTrackColor = DefaultColors.HIGHLIGHT.color,
+                inactiveTrackColor = DefaultColors.SECONDARY.color
+            )
         )
     }
 }
