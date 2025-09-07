@@ -16,8 +16,6 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -35,7 +33,7 @@ fun App(windowTitle: MutableState<String>) {
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
     val colorAmount = remember { mutableStateOf(8) }
-    val generateInitialPins = remember { mutableStateOf(true) }
+    val generateInitialPins = remember { mutableStateOf(false) } // todo: change to true
     val duplicateColors = remember { mutableStateOf(false) }
     val pinSize = remember { mutableStateOf(1f) }
 
@@ -124,15 +122,15 @@ fun beforeGame(
                 Modifier
                     .padding(10.dp)
                     .shadow(5.dp, RoundedCornerShape(5.dp))
-                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Spieleinstellungen",
-                    color = DefaultColors.TEXT.color,
+                    color = DefaultColors.TEXT_ON_PRIMARY.color,
                     modifier = Modifier
                         .shadow(5.dp)
-                        .width(410.dp)
                         .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
-                        .padding(5.dp)
+                        .padding(5.dp),
                 )
 
                 settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
@@ -159,9 +157,9 @@ fun beforeGame(
                         Modifier
                             .clip(shape)
                     ) {
-                        Text(text = "Spiele in dieser Session (${gameResults.value.size}):"
-                            , modifier = Modifier.padding(5.dp),
-                            color = DefaultColors.TEXT.color
+                        Text(text = "Spiele in dieser Session (${gameResults.value.size}):",
+                            modifier = Modifier.padding(5.dp),
+                            color = DefaultColors.TEXT_ON_PRIMARY.color
                         )
                     }
                     Button(
@@ -174,13 +172,13 @@ fun beforeGame(
                         },
                         content = {
                             Text("Reset",
-                                color = DefaultColors.TEXT.color
+                                color = DefaultColors.TEXT_ON_PRIMARY.color
                             )
                         },
                         enabled = gameResults.value.isNotEmpty(),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = DefaultColors.HIGHLIGHT.color,
-                            contentColor = DefaultColors.TEXT.color,
+                            contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
                             disabledBackgroundColor = DefaultColors.PRIMARY.color,
                             disabledContentColor = DefaultColors.SECONDARY.color
                         )
@@ -216,10 +214,10 @@ fun beforeGame(
                                     }
                                     .padding(5.dp)
                             ) {
-                                Text("Spiel ${index + 1}", color = DefaultColors.TEXT.color)
+                                Text("Spiel ${index + 1}", color = DefaultColors.TEXT_ON_PRIMARY.color)
                                 // name of both players
                                 Text("Spieler hat nach ${result.tries} ${if(result.tries >= 2) "Versuchen" else "Versuch"} $wonString",
-                                    color = DefaultColors.TEXT.color
+                                    color = DefaultColors.TEXT_ON_PRIMARY.color
                                 )
                             }
 
@@ -233,22 +231,22 @@ fun beforeGame(
                                             .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
                                             .padding(5.dp)
                                     ) {
-                                        Text("Spiel: ${gameResults.value.indexOf(result) + 1}", color = DefaultColors.TEXT.color)
+                                        Text("Spiel: ${gameResults.value.indexOf(result) + 1}", color = DefaultColors.TEXT_ON_PRIMARY.color)
 //                                    Text("Spieler: ${result.player}", color = DefaultColors.TEXT.color)
-                                        Text("Versuche: ${result.tries}", color = DefaultColors.TEXT.color)
-                                        Text("Ergebnis: $wonString", color = DefaultColors.TEXT.color)
-                                        Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp), color = DefaultColors.TEXT.color)
-                                        Text("  Reihengröße: ${result.columnSize}", color = DefaultColors.TEXT.color)
-                                        Text("  Reihenmenge: ${result.columnCount}", color = DefaultColors.TEXT.color)
-                                        Text("  Farbenmenge: ${result.colorAmount}", color = DefaultColors.TEXT.color)
-                                        Text("  Lösung generiert: ${result.generateInitialPins}", color = DefaultColors.TEXT.color)
-                                        Text("  Farben mehrfach verwendbar: ${result.duplicateColors}", color = DefaultColors.TEXT.color)
+                                        Text("Versuche: ${result.tries}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("Ergebnis: $wonString", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp), color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("  Reihengröße: ${result.columnSize}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("  Reihenmenge: ${result.columnCount}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("  Farbenmenge: ${result.colorAmount}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("  Lösung generiert: ${result.generateInitialPins}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("  Farben mehrfach verwendbar: ${result.duplicateColors}", color = DefaultColors.TEXT_ON_PRIMARY.color)
                                     }
                                 }
                             }
                         }
                     }
-                    else Text("Noch keine Spiele gespielt", color = DefaultColors.TEXT.color)
+                    else Text("Noch keine Spiele gespielt", color = DefaultColors.TEXT_ON_PRIMARY.color)
                 }
             }
         }
@@ -257,13 +255,13 @@ fun beforeGame(
             onClick = {
                 gamePhase.value = GamePhases.SET_INITIAL_PINS
             },
-            content = { Text("Start", color = DefaultColors.TEXT.color) },
+            content = { Text("Start", color = DefaultColors.TEXT_ON_PRIMARY.color) },
             modifier = Modifier
                 .padding(40.dp)
                 .size(200.dp, 100.dp),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = DefaultColors.HIGHLIGHT.color,
-                contentColor = DefaultColors.TEXT.color
+                contentColor = DefaultColors.TEXT_ON_PRIMARY.color
             )
         )
     }
@@ -279,31 +277,51 @@ fun setInitialPins(
     duplicateColors: MutableState<Boolean>,
     pinSize: MutableState<Float>
 ) {
-    Text("Lösung setzen", color = DefaultColors.TEXT.color)
-
-    solution.clear()
-
-    if(generateInitialPins.value) {
-        generateInitialPins(columnSize, colorAmount, solution, duplicateColors)
-
-        gamePhase.value = GamePhases.PLAYING
-    }
-    else {
-        repeat(columnSize.value) {
-            solution.add(Pin(Color.Black))
-        }
-
-        pinSizeSlider(pinSize)
-        Board.row(solution, columnSize, colorAmount, pinSize)
-
-        Button(
-            onClick = {
-                if(!solution.none { it.color == Color.Black }) return@Button
-
-                gamePhase.value = GamePhases.PLAYING
-            },
-            content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt", color = DefaultColors.TEXT.color) }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(10.dp)
+            .shadow(5.dp, RoundedCornerShape(5.dp))
+            .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp))
+    ) {
+        Text("Lösung setzen",
+            color = DefaultColors.TEXT_ON_PRIMARY.color,
+            modifier = Modifier
+                .shadow(5.dp, RoundedCornerShape(5.dp))
+                .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                .padding(5.dp)
         )
+
+        solution.clear()
+
+        if(generateInitialPins.value) {
+            generateInitialPins(columnSize, colorAmount, solution, duplicateColors)
+
+            gamePhase.value = GamePhases.PLAYING
+        }
+        else {
+            repeat(columnSize.value) {
+                solution.add(Pin(Color.Black))
+            }
+
+            pinSizeSlider(pinSize)
+            Board.row(solution, columnSize, colorAmount, pinSize)
+
+            Button(
+                onClick = {
+                    if(!solution.none { it.color == Color.Black }) return@Button
+
+                    gamePhase.value = GamePhases.PLAYING
+                },
+                content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = DefaultColors.HIGHLIGHT.color,
+                    contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                    disabledBackgroundColor = DefaultColors.BACKGROUND.color,
+                    disabledContentColor = DefaultColors.SECONDARY.color
+                )
+            )
+        }
     }
 }
 
@@ -344,13 +362,30 @@ fun playing(
     colorAmount: MutableState<Int>,
     pinSize: MutableState<Float>
 ) {
-    Text("Lösen", color = DefaultColors.TEXT.color)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(10.dp)
+            .shadow(5.dp, RoundedCornerShape(5.dp))
+            .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp))
+    ) {
+        Text("Lösen",
+            color = DefaultColors.TEXT_ON_PRIMARY.color,
+            modifier = Modifier
+                .shadow(5.dp, RoundedCornerShape(5.dp))
+                .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                .padding(5.dp)
+        )
+        Column(
+            Modifier.padding(5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val currentColumn = remember { mutableStateOf(0) }
 
-    val currentColumn = remember { mutableStateOf(0) }
-
-
-    pinSizeSlider(pinSize)
-    Board.rows(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount, pinSize)
+            pinSizeSlider(pinSize)
+            Board.rows(columns, columnSize, currentColumn, gamePhase, solution, won, neededTries, colorAmount, pinSize)
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -373,18 +408,18 @@ fun finished(
         Column(
             Modifier.weight(1f)
         ) {
-            Text("Ende", color = DefaultColors.TEXT.color)
+            Text("Ende", color = DefaultColors.TEXT_ON_PRIMARY.color)
 
-            if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT.color)
-            else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT.color)
+            if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
+            else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
 
-            Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT.color)
+            Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT_ON_PRIMARY.color)
 
             Button(
                 onClick = {
                     gamePhase.value = GamePhases.BEFORE_GAME
                 },
-                content = { Text("Neustarten", color = DefaultColors.TEXT.color) }
+                content = { Text("Neustarten", color = DefaultColors.TEXT_ON_PRIMARY.color) }
             )
         }
 
@@ -392,7 +427,7 @@ fun finished(
             Modifier
                 .weight(1f)
         ) {
-            Text("Lösung:", color = DefaultColors.TEXT.color)
+            Text("Lösung:", color = DefaultColors.TEXT_ON_PRIMARY.color)
 
             Box(
                 Modifier
@@ -458,12 +493,12 @@ fun settings(
                 colors = CheckboxDefaults.colors(
                     checkedColor = DefaultColors.HIGHLIGHT.color,
                     uncheckedColor = DefaultColors.SECONDARY.color,
-                    checkmarkColor = DefaultColors.TEXT.color,
+                    checkmarkColor = DefaultColors.TEXT_ON_PRIMARY.color,
                     disabledColor = DefaultColors.PRIMARY.color,
                     disabledIndeterminateColor = DefaultColors.SECONDARY.color
                 )
             )
-            Text("Lösung generieren", color = DefaultColors.TEXT.color)
+            Text("Lösung generieren", color = DefaultColors.TEXT_ON_PRIMARY.color)
         }
 
         // duplicate colors
@@ -477,12 +512,12 @@ fun settings(
                 colors = CheckboxDefaults.colors(
                     checkedColor = DefaultColors.HIGHLIGHT.color,
                     uncheckedColor = DefaultColors.SECONDARY.color,
-                    checkmarkColor = DefaultColors.TEXT.color,
+                    checkmarkColor = DefaultColors.TEXT_ON_PRIMARY.color,
                     disabledColor = DefaultColors.PRIMARY.color,
                     disabledIndeterminateColor = DefaultColors.SECONDARY.color
                 )
             )
-            Text("Farben mehrfach verwenden", color = DefaultColors.TEXT.color)
+            Text("Farben mehrfach verwenden", color = DefaultColors.TEXT_ON_PRIMARY.color)
         }
 
         // pin Size
@@ -522,17 +557,17 @@ fun textFieldInt(value: MutableState<Int>, label: String) {
                 false
             }
         },
-        label = { Text(label, color = DefaultColors.TEXT.color) },
+        label = { Text(label, color = DefaultColors.TEXT_ON_PRIMARY.color) },
         isError = columnAmountValue.toIntOrNull() == null,
         singleLine = true,
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = DefaultColors.TEXT.color,
-            cursorColor = DefaultColors.TEXT.color,
+            textColor = DefaultColors.TEXT_ON_PRIMARY.color,
+            cursorColor = DefaultColors.TEXT_ON_PRIMARY.color,
 
-            focusedBorderColor = DefaultColors.TEXT.color,
+            focusedBorderColor = DefaultColors.TEXT_ON_PRIMARY.color,
             unfocusedBorderColor = DefaultColors.SECONDARY.color,
 
-            focusedLabelColor = DefaultColors.TEXT.color,
+            focusedLabelColor = DefaultColors.TEXT_ON_PRIMARY.color,
             unfocusedLabelColor = DefaultColors.SECONDARY.color
         )
     )
@@ -541,7 +576,7 @@ fun textFieldInt(value: MutableState<Int>, label: String) {
 @Composable
 fun pinSizeSlider(pinSize: MutableState<Float>) {
     Row {
-        Text("Pin Größe (${round(pinSize.value * 10) / 10.0f})", color = DefaultColors.TEXT.color)
+        Text("Pin Größe (${round(pinSize.value * 10) / 10.0f})", color = DefaultColors.TEXT_ON_PRIMARY.color)
         Slider(
             value = pinSize.value,
             onValueChange = {pinSize.value = it},

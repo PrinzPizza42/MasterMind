@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -15,6 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
@@ -44,7 +47,14 @@ object Board {
                 val perfectPins = remember { mutableStateOf(0) } //right position and color
                 val rightColorPin = remember { mutableStateOf(0) } // only right color
 
-                Box {
+                Box(
+                    Modifier
+                        .shadow(if(currentColumn.value == columns.indexOf(column)) 5.dp else 0.dp, RoundedCornerShape(5.dp))
+                        .background(
+                        if(currentColumn.value == columns.indexOf(column)) DefaultColors.SECONDARY.color else Color.Transparent,
+                        RoundedCornerShape(5.dp)
+                        )
+                ) {
                     if(currentColumn.value != columns.indexOf(column)) {
                         Box(
                             Modifier
@@ -62,7 +72,7 @@ object Board {
                         if(currentColumn.value == columns.indexOf(column)) {
                             Button(
                                 modifier = Modifier
-                                    .size(45.dp)
+                                    .size((46 * pinSize.value).dp)
                                     .clip(RoundedCornerShape(5.dp)),
                                 onClick = {
                                     if(currentColumn.value < columns.size - 1) {
@@ -92,7 +102,13 @@ object Board {
                                 content = {
                                     Text("✓")
                                 },
-                                enabled = column.none {it.color == Color.Black}
+                                enabled = column.none {it.color == Color.Black},
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = DefaultColors.HIGHLIGHT.color,
+                                    contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                                    disabledBackgroundColor = DefaultColors.PRIMARY.color,
+                                    disabledContentColor = DefaultColors.SECONDARY.color
+                                )
                             )
                         }
                     }
@@ -149,7 +165,9 @@ object Board {
 
                 Box(
                     modifier = Modifier
+                        .scale(if(pin.color != Color.Black) 1.1f else 1f)
                         .padding((5 * pinSize.value).dp)
+                        .shadow(if(pin.color != Color.Black) 10.dp else 0.dp, CircleShape)
                         .size((35 * pinSize.value).dp)
                         .background(pin.color, CircleShape)
                         .clip(CircleShape)
