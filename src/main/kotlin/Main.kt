@@ -224,8 +224,11 @@ fun beforeGame(
                                     .background(DefaultColors.SECONDARY.color, shape)
                                     .clip(shape)
                                     .align(Alignment.CenterHorizontally)
-                                    .clickable {
+                                    .onPointerEvent(PointerEventType.Enter) {
                                         showPopup = true
+                                    }
+                                    .onPointerEvent(PointerEventType.Exit) {
+                                        showPopup = false
                                     }
                                     .padding(5.dp)
                                     .pointerHoverIcon(PointerIcon.Hand)
@@ -239,7 +242,7 @@ fun beforeGame(
 
                             if(showPopup) {
                                 Popup(
-                                    offset = IntOffset.Zero.copy(x = 210, y = cursorPosition.value.y.toInt()),
+                                    offset = IntOffset.Zero.copy(x = 210, y = cursorPosition.value.y.toInt() + 10),
                                     onDismissRequest = { showPopup = false }
                                 ) {
                                     Column(
