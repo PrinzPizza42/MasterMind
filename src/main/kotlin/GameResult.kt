@@ -7,5 +7,4 @@ data class GameResult(
     val generateInitialPins: Boolean,
     val duplicateColors: Boolean
 ) {
-    //val player: Player
 }

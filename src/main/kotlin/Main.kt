@@ -22,13 +22,14 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import kotlin.math.round
+import kotlin.uuid.ExperimentalUuidApi
 
 @Composable
 @Preview
 fun App(windowTitle: MutableState<String>) {
     // Settings
-    val columnSize = remember { mutableStateOf(4) }
-    val columnCount = remember { mutableStateOf(8) }
+    val columnSize = remember { mutableStateOf(1) }
+    val columnCount = remember { mutableStateOf(1) }
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
@@ -211,10 +212,12 @@ fun beforeGame(
                         }
                 ) {
                     if(gameResults.value.isNotEmpty()) {
+                        var index = remember { 0 }
                         for(result in gameResults.value) {
                             var showPopup by remember { mutableStateOf(false) }
                             val wonString = if(result.won) "gewonnen" else "verloren"
-                            val index = gameResults.value.indexOf(result)
+
+                            index++
 
                             Column(
                                 Modifier
@@ -233,7 +236,7 @@ fun beforeGame(
                                     .padding(5.dp)
                                     .pointerHoverIcon(PointerIcon.Hand)
                             ) {
-                                Text("Spiel ${index + 1}", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                Text("Spiel $index", color = DefaultColors.TEXT_ON_SECONDARY.color)
                                 // name of both players
                                 Text("Spieler hat nach ${result.tries} ${if(result.tries >= 2) "Versuchen" else "Versuch"} $wonString",
                                     color = DefaultColors.TEXT_ON_SECONDARY.color
@@ -399,7 +402,7 @@ fun playing(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalUuidApi::class)
 @Composable
 fun finished(
     gamePhase: MutableState<GamePhases>,
@@ -490,8 +493,8 @@ fun finished(
     }
 
     val result = GameResult(won.value, neededTries.value, columnSize.value, columnCount.value, colorAmount.value, generateInitialPins.value, duplicateColors.value)
-    println("Result: $result")
     gameResults.value.addLast(result)
+    println("Result: $result")
 
     resetValues(columns, solution, columnCount, columnSize, neededTries)
 }
