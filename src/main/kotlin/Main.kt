@@ -301,7 +301,8 @@ fun setInitialPins(
         }
         else {
             Column(
-                Modifier.padding(5.dp)
+                Modifier.padding(5.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 repeat(columnSize.value) {
                     solution.add(Pin(Color.Black))
