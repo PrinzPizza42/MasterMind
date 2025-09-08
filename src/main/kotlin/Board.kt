@@ -167,16 +167,23 @@ object Board {
             for (pin in pins) {
                 var showPopup by remember { mutableStateOf(false) }
                 val boxPosition by remember { mutableStateOf(Offset.Zero) }
+                var isHovered by remember { mutableStateOf(false) }
 
                 Box(
                     modifier = Modifier
-                        .scale(if(pin.color != Color.Black) 1.1f else 1f)
+                        .scale(if(isHovered) 1.15f else 1f)
                         .padding((5 * pinSize.value).dp)
-                        .shadow(if(pin.color != Color.Black) 10.dp else 0.dp, CircleShape)
+                        .shadow(if(isHovered) 5.dp else 0.dp, CircleShape)
                         .size((35 * pinSize.value).dp)
                         .background(pin.color, CircleShape)
                         .clip(CircleShape)
                         .clickable{ showPopup = true }
+                        .onPointerEvent(PointerEventType.Enter) {
+                            isHovered = true
+                        }
+                        .onPointerEvent(PointerEventType.Exit) {
+                            isHovered = false
+                        }
                 )
 
                 if (showPopup) {
