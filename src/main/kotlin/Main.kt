@@ -144,7 +144,8 @@ fun beforeGame(
                     content = { Text("Start") },
                     modifier = Modifier
                         .padding(40.dp)
-                        .size(200.dp, 100.dp),
+                        .size(200.dp, 100.dp)
+                        .pointerHoverIcon(PointerIcon.Hand),
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = DefaultColors.HIGHLIGHT.color,
                         contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color
@@ -181,7 +182,7 @@ fun beforeGame(
                     Button(
                         modifier = Modifier
                             .height(30.dp)
-                        ,
+                            .pointerHoverIcon(if(gameResults.value.isNotEmpty()) PointerIcon.Hand else PointerIcon.Default),
                         onClick = {
                             gameResults.value = mutableListOf()
                             println("Reset game results: $gameResults")
@@ -227,6 +228,7 @@ fun beforeGame(
                                         showPopup = true
                                     }
                                     .padding(5.dp)
+                                    .pointerHoverIcon(PointerIcon.Hand)
                             ) {
                                 Text("Spiel ${index + 1}", color = DefaultColors.TEXT_ON_SECONDARY.color)
                                 // name of both players
@@ -323,7 +325,8 @@ fun setInitialPins(
                         contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
                         disabledBackgroundColor = DefaultColors.BACKGROUND.color,
                         disabledContentColor = DefaultColors.SECONDARY.color
-                    )
+                    ),
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 )
             }
         }
@@ -446,7 +449,8 @@ fun finished(
                         contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
                         disabledBackgroundColor = DefaultColors.PRIMARY.color,
                         disabledContentColor = DefaultColors.SECONDARY.color
-                    )
+                    ),
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 )
             }
         }
@@ -539,7 +543,8 @@ fun settings(
                     checkmarkColor = DefaultColors.TEXT_ON_PRIMARY.color,
                     disabledColor = DefaultColors.PRIMARY.color,
                     disabledIndeterminateColor = DefaultColors.SECONDARY.color
-                )
+                ),
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             )
             Text("Lösung generieren", color = DefaultColors.TEXT_ON_PRIMARY.color)
         }
@@ -558,7 +563,8 @@ fun settings(
                     checkmarkColor = DefaultColors.TEXT_ON_PRIMARY.color,
                     disabledColor = DefaultColors.PRIMARY.color,
                     disabledIndeterminateColor = DefaultColors.SECONDARY.color
-                )
+                ),
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             )
             Text("Farben mehrfach verwenden", color = DefaultColors.TEXT_ON_PRIMARY.color)
         }
@@ -624,7 +630,9 @@ fun pinSizeSlider(pinSize: MutableState<Float>) {
             value = pinSize.value,
             onValueChange = {pinSize.value = it},
             valueRange = 0.5f..2f,
-            modifier = Modifier.width(300.dp),
+            modifier = Modifier
+                .width(300.dp)
+                .pointerHoverIcon(PointerIcon.Hand),
             colors = SliderDefaults.colors(
                 thumbColor = DefaultColors.HIGHLIGHT.color,
                 activeTrackColor = DefaultColors.HIGHLIGHT.color,

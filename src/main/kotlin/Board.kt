@@ -23,7 +23,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -77,7 +79,8 @@ object Board {
                             Button(
                                 modifier = Modifier
                                     .size((46 * pinSize.value).dp)
-                                    .clip(RoundedCornerShape(5.dp)),
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .pointerHoverIcon(if(column.none {it.color == Color.Black}) PointerIcon.Hand else PointerIcon.Default),
                                 onClick = {
                                     if(currentColumn.value < columns.size - 1) {
                                         val evaluation = evaluate(column, solution)
@@ -184,6 +187,7 @@ object Board {
                         .onPointerEvent(PointerEventType.Exit) {
                             isHovered = false
                         }
+                        .pointerHoverIcon(PointerIcon.Hand)
                 )
 
                 if (showPopup) {
@@ -224,6 +228,7 @@ object Board {
                                         .onPointerEvent(PointerEventType.Exit) {
                                             isHovered = false
                                         }
+                                        .pointerHoverIcon(PointerIcon.Hand)
                                     )
                                 }
 
@@ -244,6 +249,7 @@ object Board {
                                         pin.color = Color.Black
                                         showPopup = false
                                     }
+                                    .pointerHoverIcon(PointerIcon.Hand)
                                 )
                             }
                         }
