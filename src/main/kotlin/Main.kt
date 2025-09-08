@@ -127,7 +127,7 @@ fun beforeGame(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("Spieleinstellungen",
-                        color = DefaultColors.TEXT_ON_PRIMARY.color,
+                        color = DefaultColors.TEXT_ON_SECONDARY.color,
                         modifier = Modifier
                             .shadow(5.dp)
                             .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
@@ -141,13 +141,13 @@ fun beforeGame(
                     onClick = {
                         gamePhase.value = GamePhases.SET_INITIAL_PINS
                     },
-                    content = { Text("Start", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                    content = { Text("Start") },
                     modifier = Modifier
                         .padding(40.dp)
                         .size(200.dp, 100.dp),
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = DefaultColors.HIGHLIGHT.color,
-                        contentColor = DefaultColors.TEXT_ON_PRIMARY.color
+                        contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color
                     )
                 )
             }
@@ -175,7 +175,7 @@ fun beforeGame(
                     ) {
                         Text(text = "Spiele in dieser Session (${gameResults.value.size}):",
                             modifier = Modifier.padding(5.dp),
-                            color = DefaultColors.TEXT_ON_PRIMARY.color
+                            color = DefaultColors.TEXT_ON_SECONDARY.color
                         )
                     }
                     Button(
@@ -187,16 +187,14 @@ fun beforeGame(
                             println("Reset game results: $gameResults")
                         },
                         content = {
-                            Text("Reset",
-                                color = DefaultColors.TEXT_ON_PRIMARY.color
-                            )
+                            Text("Reset")
                         },
                         enabled = gameResults.value.isNotEmpty(),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = DefaultColors.HIGHLIGHT.color,
-                            contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                            contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
                             disabledBackgroundColor = DefaultColors.PRIMARY.color,
-                            disabledContentColor = DefaultColors.SECONDARY.color
+                            disabledContentColor = DefaultColors.TEXT_ON_PRIMARY.color
                         )
                     )
                 }
@@ -230,10 +228,10 @@ fun beforeGame(
                                     }
                                     .padding(5.dp)
                             ) {
-                                Text("Spiel ${index + 1}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                Text("Spiel ${index + 1}", color = DefaultColors.TEXT_ON_SECONDARY.color)
                                 // name of both players
                                 Text("Spieler hat nach ${result.tries} ${if(result.tries >= 2) "Versuchen" else "Versuch"} $wonString",
-                                    color = DefaultColors.TEXT_ON_PRIMARY.color
+                                    color = DefaultColors.TEXT_ON_SECONDARY.color
                                 )
                             }
 
@@ -247,16 +245,16 @@ fun beforeGame(
                                             .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
                                             .padding(5.dp)
                                     ) {
-                                        Text("Spiel: ${gameResults.value.indexOf(result) + 1}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("Spiel: ${gameResults.value.indexOf(result) + 1}", color = DefaultColors.TEXT_ON_SECONDARY.color)
 //                                    Text("Spieler: ${result.player}", color = DefaultColors.TEXT.color)
-                                        Text("Versuche: ${result.tries}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("Ergebnis: $wonString", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp), color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("  Reihengröße: ${result.columnSize}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("  Reihenmenge: ${result.columnCount}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("  Farbenmenge: ${result.colorAmount}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("  Lösung generiert: ${result.generateInitialPins}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                                        Text("  Farben mehrfach verwendbar: ${result.duplicateColors}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                                        Text("Versuche: ${result.tries}", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("Ergebnis: $wonString", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("mit Einstellungen", Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp), color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("  Reihengröße: ${result.columnSize}", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("  Reihenmenge: ${result.columnCount}", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("  Farbenmenge: ${result.colorAmount}", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("  Lösung generiert: ${result.generateInitialPins}", color = DefaultColors.TEXT_ON_SECONDARY.color)
+                                        Text("  Farben mehrfach verwendbar: ${result.duplicateColors}", color = DefaultColors.TEXT_ON_SECONDARY.color)
                                     }
                                 }
                             }
@@ -287,7 +285,7 @@ fun setInitialPins(
             .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp))
     ) {
         Text("Lösung setzen",
-            color = DefaultColors.TEXT_ON_PRIMARY.color,
+            color = DefaultColors.TEXT_ON_SECONDARY.color,
             modifier = Modifier
                 .shadow(5.dp, RoundedCornerShape(5.dp))
                 .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
@@ -319,10 +317,10 @@ fun setInitialPins(
 
                         gamePhase.value = GamePhases.PLAYING
                     },
-                    content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                    content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt")},
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = DefaultColors.HIGHLIGHT.color,
-                        contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                        contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
                         disabledBackgroundColor = DefaultColors.BACKGROUND.color,
                         disabledContentColor = DefaultColors.SECONDARY.color
                     )
@@ -377,7 +375,7 @@ fun playing(
             .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp))
     ) {
         Text("Lösen",
-            color = DefaultColors.TEXT_ON_PRIMARY.color,
+            color = DefaultColors.TEXT_ON_SECONDARY.color,
             modifier = Modifier
                 .shadow(5.dp, RoundedCornerShape(5.dp))
                 .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
@@ -421,7 +419,7 @@ fun finished(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Ende",
-                color = DefaultColors.TEXT_ON_PRIMARY.color,
+                color = DefaultColors.TEXT_ON_SECONDARY.color,
                 modifier = Modifier
                     .shadow(5.dp, RoundedCornerShape(5.dp))
                     .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
@@ -442,10 +440,10 @@ fun finished(
                     onClick = {
                         gamePhase.value = GamePhases.BEFORE_GAME
                     },
-                    content = { Text("Neustarten", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                    content = { Text("Neustarten") },
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = DefaultColors.HIGHLIGHT.color,
-                        contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                        contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
                         disabledBackgroundColor = DefaultColors.PRIMARY.color,
                         disabledContentColor = DefaultColors.SECONDARY.color
                     )
@@ -461,7 +459,7 @@ fun finished(
                 .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
         ) {
             Text("Lösung:",
-                color = DefaultColors.TEXT_ON_PRIMARY.color,
+                color = DefaultColors.TEXT_ON_SECONDARY.color,
                 modifier = Modifier
                     .shadow(5.dp, RoundedCornerShape(5.dp))
                     .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))

@@ -109,9 +109,9 @@ object Board {
                                 enabled = column.none {it.color == Color.Black},
                                 colors = ButtonDefaults.buttonColors(
                                     backgroundColor = DefaultColors.HIGHLIGHT.color,
-                                    contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                                    contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
                                     disabledBackgroundColor = DefaultColors.PRIMARY.color,
-                                    disabledContentColor = DefaultColors.SECONDARY.color
+                                    disabledContentColor = DefaultColors.TEXT_ON_PRIMARY.color
                                 )
                             )
                         }
