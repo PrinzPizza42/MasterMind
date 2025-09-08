@@ -1,6 +1,16 @@
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,18 +59,11 @@ object Board {
                 .fillMaxHeight()
         ) {
             for (column in columns) {
-                //Evaluation Data
-                val perfectPins = remember { mutableStateOf(0) } //right position and color
+                // Evaluation Data
+                val perfectPins = remember { mutableStateOf(0) } // right position and color
                 val rightColorPin = remember { mutableStateOf(0) } // only right color
 
-                Box(
-                    Modifier
-                        .shadow(if(currentColumn.value == columns.indexOf(column)) 5.dp else 0.dp, RoundedCornerShape(5.dp))
-                        .background(
-                        if(currentColumn.value == columns.indexOf(column)) DefaultColors.SECONDARY.color else Color.Transparent,
-                        RoundedCornerShape(5.dp)
-                        )
-                ) {
+                Box {
                     if(currentColumn.value != columns.indexOf(column)) {
                         Box(
                             Modifier
@@ -70,7 +73,7 @@ object Board {
                         )
                     }
 
-                    Row {
+                    Row(Modifier.zIndex(1f)) {
                         evaluationRow(perfectPins, rightColorPin, columnSize, pinSize)
 
                         row(column, columnSize, colorAmount, pinSize)
@@ -119,6 +122,39 @@ object Board {
                             )
                         }
                     }
+
+                        AnimatedContent(
+                            targetState = currentColumn.value,
+                            transitionSpec = {
+                                // Jetzt kannst du den alten mit dem neuen Index vergleichen!
+                                if (targetState < initialState) {
+                                    // Index wird größer (nach unten gescrollt)
+                                    slideInVertically { height -> height } + fadeIn() togetherWith
+                                            slideOutVertically { height -> -height } + fadeOut()
+                                } else {
+                                    // Index wird kleiner (nach oben gescrollt)
+                                    slideInVertically { height -> -height } + fadeIn() togetherWith
+                                            slideOutVertically { height -> height } + fadeOut()
+                                }.using(SizeTransform(clip = false))
+                            },
+                            label = "animatedSelection"
+                        ) { targetIndex ->
+                            if(targetIndex == columns.indexOf(column)) {
+                                Box(
+                                    Modifier
+                                        .size((((45 * columnSize.value) + (30 * columnSize.value)) * pinSize.value).dp, (45 * pinSize.value).dp)
+                                        .shadow(
+                                            5.dp,
+                                            RoundedCornerShape(5.dp)
+                                        )
+                                        .background(
+                                            DefaultColors.SECONDARY.color,
+                                            RoundedCornerShape(5.dp)
+                                        )
+                                        .zIndex(0f)
+                                )
+                            }
+                        }
                 }
             }
         }
@@ -172,11 +208,27 @@ object Board {
                 val boxPosition by remember { mutableStateOf(Offset.Zero) }
                 var isHovered by remember { mutableStateOf(false) }
 
+                val scale by animateFloatAsState(
+                    targetValue = if(isHovered) 1.15f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                )
+
+                val shadow by animateDpAsState(
+                    targetValue = if(isHovered) 5.dp else 0.dp,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                )
+
                 Box(
                     modifier = Modifier
-                        .scale(if(isHovered) 1.15f else 1f)
+                        .scale(scale)
                         .padding((5 * pinSize.value).dp)
-                        .shadow(if(isHovered) 5.dp else 0.dp, CircleShape)
+                        .shadow(shadow, CircleShape)
                         .size((35 * pinSize.value).dp)
                         .background(pin.color, CircleShape)
                         .clip(CircleShape)
@@ -207,14 +259,30 @@ object Board {
                                 for(color in PinColors.entries) {
                                     var isHovered by remember { mutableStateOf(false) }
 
+                                    val scale by animateFloatAsState(
+                                        targetValue = if(isHovered) 1.15f else 1f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )
+
+                                    val shadow by animateDpAsState(
+                                        targetValue = if(isHovered) 5.dp else 0.dp,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )
+
                                     if(PinColors.entries.indexOf(color) >= colorAmount.value) continue
 
                                     val colorPickerPin = Pin(color.color)
 
                                     Box (Modifier
-                                        .scale(if(isHovered) 1.15f else 1f)
+                                        .scale(scale)
                                         .padding((5 * pinSize.value).dp)
-                                        .shadow(if(isHovered) 5.dp else 0.dp, CircleShape)
+                                        .shadow(shadow, CircleShape)
                                         .size((35 * pinSize.value).dp)
                                         .background(colorPickerPin.initialColor, CircleShape)
                                         .clip(CircleShape)

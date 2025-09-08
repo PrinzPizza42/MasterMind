@@ -1,3 +1,12 @@
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -28,8 +37,8 @@ import kotlin.uuid.ExperimentalUuidApi
 @Preview
 fun App(windowTitle: MutableState<String>) {
     // Settings
-    val columnSize = remember { mutableStateOf(1) }
-    val columnCount = remember { mutableStateOf(1) }
+    val columnSize = remember { mutableStateOf(4) }
+    val columnCount = remember { mutableStateOf(8) }
     val columns = remember { mutableStateListOf<SnapshotStateList<Pin>>() }
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
@@ -76,31 +85,55 @@ fun App(windowTitle: MutableState<String>) {
         }
     }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(DefaultColors.BACKGROUND.color),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        when (gamePhase.value) {
-            GamePhases.BEFORE_GAME -> {
-                beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors, pinSize)
-                windowTitle.value = "Vor dem Spiel"
-            }
-            GamePhases.SET_INITIAL_PINS -> {
-                setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
-                windowTitle.value = "Lösung setzen"
-            }
-            GamePhases.PLAYING -> {
-                playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount, pinSize)
-                windowTitle.value = "Spielend"
-            }
-            GamePhases.FINISHED -> {
-                finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors, pinSize)
-                windowTitle.value = if(won.value) "Gewonnen" else "Verloren"
+    AnimatedContent(
+        targetState = gamePhase.value,
+        transitionSpec = {
+            // Compare the incoming number with the previous number.
+            if (targetState.ordinal > initialState.ordinal) {
+                // If the target number is larger, it slides up and fades in
+                // while the initial (smaller) number slides up and fades out.
+                slideInHorizontally { height -> height } + fadeIn() togetherWith
+                        slideOutHorizontally { height -> -height } + fadeOut()
+            } else {
+                // If the target number is smaller, it slides down and fades in
+                // while the initial number slides down and fades out.
+                slideInHorizontally { height -> -height } + fadeIn() togetherWith
+                        slideOutHorizontally { height -> height } + fadeOut()
+            }.using(
+                // Disable clipping since the faded slide-in/out should
+                // be displayed out of bounds.
+                SizeTransform(clip = false)
+            )
+        },
+        label = "animated content",
+        modifier = Modifier.background(DefaultColors.BACKGROUND.color),
+        ) { targetCount ->
+        Column(
+            Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            when (targetCount) {
+                GamePhases.BEFORE_GAME -> {
+                    beforeGame(gamePhase, columnSize, columnCount, colorAmount, gameResults, generateInitialPins, duplicateColors, pinSize)
+                    windowTitle.value = "Vor dem Spiel"
+                }
+                GamePhases.SET_INITIAL_PINS -> {
+                    setInitialPins(gamePhase, solution, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
+                    windowTitle.value = "Lösung setzen"
+                }
+                GamePhases.PLAYING -> {
+                    playing(columns, columnSize, columnCount, gamePhase, solution, won, neededTries, colorAmount, pinSize)
+                    windowTitle.value = "Spielend"
+                }
+                GamePhases.FINISHED -> {
+                    finished(gamePhase, won, neededTries, columns, solution, columnCount, columnSize, gameResults, colorAmount, generateInitialPins, duplicateColors, pinSize)
+                    windowTitle.value = if(won.value) "Gewonnen" else "Verloren"
+                }
             }
         }
     }
+
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
