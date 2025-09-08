@@ -300,27 +300,31 @@ fun setInitialPins(
             gamePhase.value = GamePhases.PLAYING
         }
         else {
-            repeat(columnSize.value) {
-                solution.add(Pin(Color.Black))
-            }
+            Column(
+                Modifier.padding(5.dp)
+            ) {
+                repeat(columnSize.value) {
+                    solution.add(Pin(Color.Black))
+                }
 
-            pinSizeSlider(pinSize)
-            Board.row(solution, columnSize, colorAmount, pinSize)
+                pinSizeSlider(pinSize)
+                Board.row(solution, columnSize, colorAmount, pinSize)
 
-            Button(
-                onClick = {
-                    if(!solution.none { it.color == Color.Black }) return@Button
+                Button(
+                    onClick = {
+                        if(!solution.none { it.color == Color.Black }) return@Button
 
-                    gamePhase.value = GamePhases.PLAYING
-                },
-                content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt", color = DefaultColors.TEXT_ON_PRIMARY.color) },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = DefaultColors.HIGHLIGHT.color,
-                    contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
-                    disabledBackgroundColor = DefaultColors.BACKGROUND.color,
-                    disabledContentColor = DefaultColors.SECONDARY.color
+                        gamePhase.value = GamePhases.PLAYING
+                    },
+                    content = { Text(if(solution.none { it.color == Color.Black }) "Fertig" else "Nicht alle gesetzt", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = DefaultColors.HIGHLIGHT.color,
+                        contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                        disabledBackgroundColor = DefaultColors.BACKGROUND.color,
+                        disabledContentColor = DefaultColors.SECONDARY.color
+                    )
                 )
-            )
+            }
         }
     }
 }
