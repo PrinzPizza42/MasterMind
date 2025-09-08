@@ -33,7 +33,7 @@ fun App(windowTitle: MutableState<String>) {
     val gamePhase = remember { mutableStateOf(GamePhases.BEFORE_GAME) }
     val solution = remember { mutableListOf<Pin>() }
     val colorAmount = remember { mutableStateOf(8) }
-    val generateInitialPins = remember { mutableStateOf(false) } // todo: change to true
+    val generateInitialPins = remember { mutableStateOf(true) }
     val duplicateColors = remember { mutableStateOf(false) }
     val pinSize = remember { mutableStateOf(1f) }
 
@@ -118,22 +118,38 @@ fun beforeGame(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row {
-            Column(
-                Modifier
-                    .padding(10.dp)
-                    .shadow(5.dp, RoundedCornerShape(5.dp))
-                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Spieleinstellungen",
-                    color = DefaultColors.TEXT_ON_PRIMARY.color,
-                    modifier = Modifier
-                        .shadow(5.dp)
-                        .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
-                        .padding(5.dp),
-                )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    Modifier
+                        .padding(10.dp)
+                        .shadow(5.dp, RoundedCornerShape(5.dp))
+                        .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Spieleinstellungen",
+                        color = DefaultColors.TEXT_ON_PRIMARY.color,
+                        modifier = Modifier
+                            .shadow(5.dp)
+                            .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                            .padding(5.dp),
+                    )
 
-                settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
+                    settings(columnCount, columnSize, colorAmount, generateInitialPins, duplicateColors, pinSize)
+                }
+
+                Button(
+                    onClick = {
+                        gamePhase.value = GamePhases.SET_INITIAL_PINS
+                    },
+                    content = { Text("Start", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                    modifier = Modifier
+                        .padding(40.dp)
+                        .size(200.dp, 100.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = DefaultColors.HIGHLIGHT.color,
+                        contentColor = DefaultColors.TEXT_ON_PRIMARY.color
+                    )
+                )
             }
 
             // Game Results
@@ -250,20 +266,6 @@ fun beforeGame(
                 }
             }
         }
-
-        Button(
-            onClick = {
-                gamePhase.value = GamePhases.SET_INITIAL_PINS
-            },
-            content = { Text("Start", color = DefaultColors.TEXT_ON_PRIMARY.color) },
-            modifier = Modifier
-                .padding(40.dp)
-                .size(200.dp, 100.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = DefaultColors.HIGHLIGHT.color,
-                contentColor = DefaultColors.TEXT_ON_PRIMARY.color
-            )
-        )
     }
 }
 
@@ -411,35 +413,73 @@ fun finished(
 ) {
     Row {
         Column(
-            Modifier.weight(1f)
+            Modifier
+                .width(300.dp)
+                .padding(10.dp)
+                .shadow(5.dp, RoundedCornerShape(5.dp))
+                .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Ende", color = DefaultColors.TEXT_ON_PRIMARY.color)
-
-            if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
-            else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
-
-            Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-
-            Button(
-                onClick = {
-                    gamePhase.value = GamePhases.BEFORE_GAME
-                },
-                content = { Text("Neustarten", color = DefaultColors.TEXT_ON_PRIMARY.color) }
+            Text("Ende",
+                color = DefaultColors.TEXT_ON_PRIMARY.color,
+                modifier = Modifier
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                    .padding(5.dp)
             )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(5.dp)
+            ) {
+                if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
+
+                Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+
+                Button(
+                    onClick = {
+                        gamePhase.value = GamePhases.BEFORE_GAME
+                    },
+                    content = { Text("Neustarten", color = DefaultColors.TEXT_ON_PRIMARY.color) },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = DefaultColors.HIGHLIGHT.color,
+                        contentColor = DefaultColors.TEXT_ON_PRIMARY.color,
+                        disabledBackgroundColor = DefaultColors.PRIMARY.color,
+                        disabledContentColor = DefaultColors.SECONDARY.color
+                    )
+                )
+            }
         }
 
         Column(
-            Modifier
-                .weight(1f)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(10.dp)
+                .shadow(5.dp, RoundedCornerShape(5.dp))
+                .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
         ) {
-            Text("Lösung:", color = DefaultColors.TEXT_ON_PRIMARY.color)
+            Text("Lösung:",
+                color = DefaultColors.TEXT_ON_PRIMARY.color,
+                modifier = Modifier
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                    .padding(5.dp)
+            )
 
-            Box(
-                Modifier
-                    .clickable(enabled = false) {}
-                    .align(Alignment.CenterHorizontally)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(5.dp)
             ) {
-                Board.immutableRow(solution, columnSize, pinSize)
+                Box(
+                    Modifier
+                        .clickable(enabled = false) {}
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Board.immutableRow(solution, columnSize, pinSize)
+                }
             }
         }
     }

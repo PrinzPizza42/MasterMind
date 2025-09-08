@@ -1,5 +1,6 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,12 +15,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -147,6 +151,7 @@ object Board {
         return Pair(perfectPins, rightColorPins)
     }
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     fun row(
         pins: List<Pin>,
@@ -181,19 +186,24 @@ object Board {
                     ) {
                         Column(
                             modifier = Modifier
-                                .background(Color.White, shape = RoundedCornerShape((8 * pinSize.value).dp))
+                                .shadow(30.dp, RoundedCornerShape((8 * pinSize.value).dp))
+                                .background(DefaultColors.SECONDARY.color, shape = RoundedCornerShape((8 * pinSize.value).dp))
                                 .padding((16 * pinSize.value).dp)
                         ) {
-                            Text("Wähle eine Farbe:")
+                            Text("Wähle eine Farbe:", color = DefaultColors.TEXT_ON_SECONDARY.color)
                             Spacer(modifier = Modifier.height((8 * pinSize.value).dp))
                             Row {
                                 for(color in PinColors.entries) {
+                                    var isHovered by remember { mutableStateOf(false) }
+
                                     if(PinColors.entries.indexOf(color) >= colorAmount.value) continue
 
                                     val colorPickerPin = Pin(color.color)
 
                                     Box (Modifier
+                                        .scale(if(isHovered) 1.15f else 1f)
                                         .padding((5 * pinSize.value).dp)
+                                        .shadow(if(isHovered) 5.dp else 0.dp, CircleShape)
                                         .size((35 * pinSize.value).dp)
                                         .background(colorPickerPin.initialColor, CircleShape)
                                         .clip(CircleShape)
@@ -201,13 +211,19 @@ object Board {
                                             pin.color = color.color
                                             showPopup = false
                                         }
+                                        .onPointerEvent(PointerEventType.Enter) {
+                                            isHovered = true
+                                        }
+                                        .onPointerEvent(PointerEventType.Exit) {
+                                            isHovered = false
+                                        }
                                     )
                                 }
 
                                 Box(
                                     modifier = Modifier
                                         .padding((5 * pinSize.value).dp)
-                                        .background(Color.Gray, RoundedCornerShape((15 * pinSize.value).dp))
+                                        .background(DefaultColors.HIGHLIGHT.color, RoundedCornerShape((15 * pinSize.value).dp))
                                         .size((3 * pinSize.value).dp, (35 * pinSize.value).dp)
                                 )
 
