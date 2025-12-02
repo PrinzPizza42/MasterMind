@@ -25,6 +25,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -495,8 +496,8 @@ fun finished(
                 )
             }
         }
-        Row(
-            horizontalArrangement = Arrangement.Center
+        Column(
+            horizontalAlignment = Alignment.End
         ){
             // Solution Element
             Column(
