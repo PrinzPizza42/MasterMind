@@ -190,6 +190,18 @@ object Board {
         return Pair(perfectPins, rightColorPins)
     }
 
+    fun toPinList(columns: SnapshotStateList<SnapshotStateList<Pin>>): List<List<Pin>> {
+        val list = ArrayList<ArrayList<Pin>>()
+        for(column in columns) {
+            val newColumn = ArrayList<Pin>()
+            for(pin in column) {
+                if(pin.color != Color.Black) newColumn.add(pin)
+            }
+            if(newColumn.isNotEmpty()) list.add(newColumn)
+        }
+        return list.toList()
+    }
+
     @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     fun row(

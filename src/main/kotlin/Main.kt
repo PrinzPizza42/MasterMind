@@ -451,77 +451,83 @@ fun finished(
     duplicateColors: MutableState<Boolean>,
     pinSize: MutableState<Float>
 ) {
-    Row {
-        Column(
-            Modifier
-                .width(300.dp)
-                .padding(10.dp)
-                .shadow(5.dp, RoundedCornerShape(5.dp))
-                .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Ende",
-                color = DefaultColors.TEXT_ON_SECONDARY.color,
-                modifier = Modifier
-                    .shadow(5.dp, RoundedCornerShape(5.dp))
-                    .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
-                    .padding(5.dp)
-            )
-
+    Column {
+        Row {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(5.dp)
+                Modifier
+                    .width(300.dp)
+                    .padding(10.dp)
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
-                else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
-
-                Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT_ON_PRIMARY.color)
-
-                Button(
-                    onClick = {
-                        gamePhase.value = GamePhases.BEFORE_GAME
-                    },
-                    content = { Text("Neustarten") },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = DefaultColors.HIGHLIGHT.color,
-                        contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
-                        disabledBackgroundColor = DefaultColors.PRIMARY.color,
-                        disabledContentColor = DefaultColors.SECONDARY.color
-                    ),
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                Text("Ende",
+                    color = DefaultColors.TEXT_ON_SECONDARY.color,
+                    modifier = Modifier
+                        .shadow(5.dp, RoundedCornerShape(5.dp))
+                        .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                        .padding(5.dp)
                 )
-            }
-        }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(10.dp)
-                .shadow(5.dp, RoundedCornerShape(5.dp))
-                .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
-        ) {
-            Text("Lösung:",
-                color = DefaultColors.TEXT_ON_SECONDARY.color,
-                modifier = Modifier
-                    .shadow(5.dp, RoundedCornerShape(5.dp))
-                    .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
-                    .padding(5.dp)
-            )
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                Box(
-                    Modifier
-                        .clickable(enabled = false) {}
-                        .align(Alignment.CenterHorizontally)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(5.dp)
                 ) {
-                    Board.immutableRow(solution, columnSize, pinSize)
+                    if(won.value) Text("Du hast das Muster gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
+                    else Text("Du hast das Muster nicht rechtzeitig gefunden", color = DefaultColors.TEXT_ON_PRIMARY.color)
+
+                    Text("Gebrauchte Versuche: ${neededTries.value}", color = DefaultColors.TEXT_ON_PRIMARY.color)
+
+                    Button(
+                        onClick = {
+                            gamePhase.value = GamePhases.BEFORE_GAME
+                        },
+                        content = { Text("Neustarten") },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = DefaultColors.HIGHLIGHT.color,
+                            contentColor = DefaultColors.TEXT_ON_HIGHLIGHT.color,
+                            disabledBackgroundColor = DefaultColors.PRIMARY.color,
+                            disabledContentColor = DefaultColors.SECONDARY.color
+                        ),
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                    )
                 }
             }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(10.dp)
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(DefaultColors.PRIMARY.color, RoundedCornerShape(5.dp)),
+            ) {
+                Text("Lösung:",
+                    color = DefaultColors.TEXT_ON_SECONDARY.color,
+                    modifier = Modifier
+                        .shadow(5.dp, RoundedCornerShape(5.dp))
+                        .background(DefaultColors.SECONDARY.color, RoundedCornerShape(5.dp))
+                        .padding(5.dp)
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(5.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .clickable(enabled = false) {}
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        Board.immutableRow(solution, columnSize, pinSize)
+                    }
+                }
+            }
+        }
+        Column{
+            saveValues(columns)
+            FinishedBoard.paint(pinSize)
         }
     }
 
@@ -530,6 +536,10 @@ fun finished(
     println("Result: $result")
 
     resetValues(columns, solution, columnCount, columnSize, neededTries)
+}
+
+private fun saveValues(columns: SnapshotStateList<SnapshotStateList<Pin>>) {
+    FinishedBoard.pinRowList = Board.toPinList(columns)
 }
 
 @Composable

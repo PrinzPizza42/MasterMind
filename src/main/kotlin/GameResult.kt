@@ -6,5 +6,4 @@ data class GameResult(
     val colorAmount: Int,
     val generateInitialPins: Boolean,
     val duplicateColors: Boolean
-) {
-}
+)
